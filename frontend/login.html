@@ -32,6 +32,15 @@
 
       <form id="loginForm">
         <div class="form-group">
+          <label for="role">Account Type</label>
+          <select id="role" class="form-control" required>
+            <option value="passenger">Passenger</option>
+            <option value="driver">Driver</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label for="loginId">Email or Username</label>
           <input type="text" id="loginId" class="form-control" placeholder="e.g. juandc or user@demo.pdot" required autofocus>
         </div>
@@ -39,16 +48,6 @@
         <div class="form-group">
           <label for="password">Password</label>
           <input type="password" id="password" class="form-control" placeholder="••••••••" required>
-        </div>
-
-        <!-- Quick Demo Account Fillers for rapid local testing -->
-        <div style="background: #F1F5F9; border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.8rem;">
-          <div style="font-weight: 700; margin-bottom: 0.35rem; color: var(--text-main);">Quick Demo Logins:</div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="fillLogin('passenger@demo.pdot', 'Password123!')">Passenger</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="fillLogin('driver@demo.pdot', 'Password123!')">Driver</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="fillLogin('admin@pdot.ph', 'AdminPdot2026!')">Admin</button>
-          </div>
         </div>
 
         <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">Log In</button>
@@ -64,11 +63,6 @@
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
   <script>
-    function fillLogin(id, pass) {
-      document.getElementById('loginId').value = id;
-      document.getElementById('password').value = pass;
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('expired')) {
       const a = document.getElementById('alertBox');
@@ -91,21 +85,22 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Authenticating...';
 
+      const role = document.getElementById('role').value;
       const loginId = document.getElementById('loginId').value;
       const password = document.getElementById('password').value;
 
       try {
-        const res = await API.post('/auth/login', { loginId, password });
+        const res = await API.post('/auth/login', { role, loginId, password });
 
         if (res.success) {
           API.setToken(res.data.token);
           API.setUser(res.data.user);
 
           // Role-based redirect
-          const role = res.data.user.role;
-          if (role === 'admin' || role === 'superadmin') {
+          const userRole = res.data.user.role || role;
+          if (userRole === 'admin' || userRole === 'superadmin') {
             window.location.href = '/admin/dashboard.html';
-          } else if (role === 'driver') {
+          } else if (userRole === 'driver') {
             window.location.href = '/driver/dashboard.html';
           } else {
             window.location.href = '/passenger/dashboard.html';
