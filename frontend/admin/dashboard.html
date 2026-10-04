@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html" class="active"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/notifications.html"><span>🔔</span> Notifications & Broadcasts</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+        <li><a href="/admin/settings.html"><span>⚙️</span> Platform Settings</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Transport Operation Control</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-outline btn-sm" onclick="loadAdminStats()">🔄 Refresh Data</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <!-- Key Metrics Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon primary">👥</div>
+            <div>
+              <div class="stat-value" id="statUsers">0</div>
+              <div class="stat-label">Total Registered Users</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warning">🪪</div>
+            <div>
+              <div class="stat-value" id="statPendingDrivers">0</div>
+              <div class="stat-label">Pending Driver Reviews</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success">🟢</div>
+            <div>
+              <div class="stat-value" id="statOnlineDrivers">0</div>
+              <div class="stat-label">Drivers Online Now</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon info">⚡</div>
+            <div>
+              <div class="stat-value" id="statActiveRides">0</div>
+              <div class="stat-label">Active Ongoing Rides</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon primary">💰</div>
+            <div>
+              <div class="stat-value" id="statRevenue">PHP 0</div>
+              <div class="stat-label">Total Recorded Fares</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warning">⭐</div>
+            <div>
+              <div class="stat-value" id="statRating">5.0</div>
+              <div class="stat-label">Platform Average Rating</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column Overview -->
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem; margin-bottom: 2rem;">
+          <!-- Recent Rides Table -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Latest Trip Bookings</div>
+              <a href="/admin/rides.html" class="btn btn-outline btn-sm">View All</a>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Passenger</th>
+                    <th>Driver</th>
+                    <th>Route</th>
+                    <th>Fare</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="recentRidesTbody">
+                  <tr><td colspan="6" style="text-align: center;">Loading trips...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Audit Trail -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Audit Trail</div>
+              <a href="/admin/audit-logs.html" class="btn btn-outline btn-sm">Full Logs</a>
+            </div>
+            <div id="recentAuditList" style="font-size: 0.85rem;">
+              <div style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading logs...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('Admin Dashboard');
+
+    async function loadAdminStats() {
+      try {
+        const res = await API.get('/admin/dashboard');
+        if (res.success) {
+          const d = res.data;
+          document.getElementById('statUsers').textContent = d.totalUsers;
+          document.getElementById('statPendingDrivers').textContent = d.pendingDriverApps;
+          document.getElementById('statOnlineDrivers').textContent = d.onlineDrivers;
+          document.getElementById('statActiveRides').textContent = d.activeRides;
+          document.getElementById('statRevenue').textContent = `PHP ${d.totalRecordedFares}`;
+          document.getElementById('statRating').textContent = `${d.averageRating} ★`;
+
+          // Populate recent rides
+          const tbody = document.getElementById('recentRidesTbody');
+          if (!d.recentRides || d.recentRides.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 1rem;">No recent rides.</td></tr>';
+          } else {
+            tbody.innerHTML = '';
+            d.recentRides.forEach(r => {
+              const passName = r.passenger ? `${r.passenger.firstName} ${r.passenger.lastName}` : 'Guest';
+              const drvName = r.driver && r.driver.user ? `${r.driver.user.firstName}` : 'Searching';
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><code>#${r._id.toString().slice(-5).toUpperCase()}</code></td>
+                <td>${passName}</td>
+                <td>${drvName}</td>
+                <td>${r.pickup.barangay || 'Centro'} &rarr; ${r.destination.barangay || 'Carig'}</td>
+                <td>PHP ${r.finalFare || r.estimatedFare}</td>
+                <td><span class="badge ${r.status === 'completed' ? 'badge-success' : 'badge-warning'}">${r.status.replace(/_/g, ' ')}</span></td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+
+          // Populate recent audits
+          const auditDiv = document.getElementById('recentAuditList');
+          if (!d.recentAudits || d.recentAudits.length === 0) {
+            auditDiv.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1rem;">No audit logs yet.</div>';
+          } else {
+            auditDiv.innerHTML = '';
+            d.recentAudits.forEach(a => {
+              const el = document.createElement('div');
+              el.style.cssText = 'border-bottom: 1px solid var(--border-color); padding: 0.6rem 0;';
+              el.innerHTML = `
+                <div style="font-weight: 700; color: var(--primary);">${a.action}</div>
+                <div>${a.description}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${new Date(a.timestamp).toLocaleString('en-PH')} • ${a.actor ? a.actor.username : 'System'}</div>
+              `;
+              auditDiv.appendChild(el);
+            });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadAdminStats();
+  </script>
+</body>
+</html>

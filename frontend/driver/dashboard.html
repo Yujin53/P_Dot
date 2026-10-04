@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Dashboard — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/ride.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Verified Driver</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html" class="active"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/onboarding.html"><span>🚀</span> Onboarding Guide</a></li>
+        <li><a href="/driver/available-rides.html"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html"><span>💰</span> Earnings Summary</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/verification.html"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/profile.html"><span>👤</span> Driver Profile</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Driver Control Center</h1>
+        <div class="topbar-actions">
+          <!-- Online/Offline Switch -->
+          <div style="display: flex; align-items: center; gap: 0.5rem; background: #F1F5F9; padding: 0.25rem 0.75rem; border-radius: 9999px;">
+            <span id="onlineDot" style="width: 10px; height: 10px; border-radius: 50%; background-color: #94A3B8;"></span>
+            <span id="onlineText" style="font-size: 0.85rem; font-weight: 700;">OFFLINE</span>
+            <button class="btn btn-primary btn-sm" id="toggleOnlineBtn" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="toggleOnlineStatus()">Go Online</button>
+          </div>
+          <button class="notif-bell-btn" id="notifBell">🔔 <span class="notif-badge" id="notifBadge" style="display: none;">0</span></button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <!-- Verification Warning if not approved -->
+        <div id="unapprovedBanner" class="alert alert-warning" style="display: none;">
+          <div>
+            <strong>Driver Verification Required:</strong> Your driver application is currently <span id="verifStatusText" style="font-weight: 800;">PENDING</span>. You cannot go online or accept ride requests until admin reviews your documents.
+            <div style="margin-top: 0.5rem;"><a href="/driver/verification.html" class="btn btn-outline btn-sm">Inspect Document Status</a></div>
+          </div>
+        </div>
+
+        <!-- Active Trip Alert Banner if currently assigned -->
+        <div id="activeTripBanner" class="card" style="display: none; border-left: 4px solid var(--primary); background: #F0FDF4;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span class="badge badge-success" id="activeTripStatus">ASSIGNED</span>
+              <h3 style="margin-top: 0.5rem; font-size: 1.2rem;" id="activeTripPassenger">Passenger Pickup</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted);" id="activeTripRoute">Pickup & Destination...</p>
+            </div>
+            <div>
+              <a href="/driver/active-trip.html" class="btn btn-primary">Open Trip Manager &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Driver Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon primary">💰</div>
+            <div>
+              <div class="stat-value" id="todayEarnings">PHP 0</div>
+              <div class="stat-label">Today's Earnings</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success">🛺</div>
+            <div>
+              <div class="stat-value" id="todayTrips">0</div>
+              <div class="stat-label">Trips Completed Today</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warning">⭐</div>
+            <div>
+              <div class="stat-value" id="driverRating">5.0</div>
+              <div class="stat-label">Driver Rating</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon info">📑</div>
+            <div>
+              <div class="stat-value" id="totalTrips">0</div>
+              <div class="stat-label">Total Lifetime Trips</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Ride Requests Feed -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Nearby Ride Requests (Tuguegarao)</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Real-time queue for online drivers matching your vehicle type</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="fetchRequests()">🔄 Refresh Queue</button>
+          </div>
+
+          <div id="requestsContainer">
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading available requests...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/driver/dashboard.html" class="mobile-nav-item active"><span class="icon">📊</span>Home</a>
+    <a href="/driver/available-rides.html" class="mobile-nav-item"><span class="icon">📍</span>Requests</a>
+    <a href="/driver/active-trip.html" class="mobile-nav-item"><span class="icon">⚡</span>Trip</a>
+    <a href="/driver/earnings.html" class="mobile-nav-item"><span class="icon">💰</span>Earnings</a>
+    <a href="/driver/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    if (!Auth.checkAuth(['driver'])) {
+      // redirected
+    }
+
+    let isOnline = false;
+    let driverProfile = null;
+
+    Nav.renderHeader('Driver Dashboard');
+
+    async function loadDriverDashboard() {
+      try {
+        const res = await API.get('/drivers/profile');
+        if (res.success) {
+          driverProfile = res.data.profile;
+          isOnline = Boolean(driverProfile.isOnline);
+          updateOnlineUI();
+
+          document.getElementById('driverRating').textContent = driverProfile.averageRating || '5.0';
+          document.getElementById('totalTrips').textContent = driverProfile.totalTripsCompleted || 0;
+
+          if (driverProfile.verificationStatus !== 'approved') {
+            document.getElementById('unapprovedBanner').style.display = 'block';
+            document.getElementById('verifStatusText').textContent = driverProfile.verificationStatus.toUpperCase();
+            document.getElementById('toggleOnlineBtn').disabled = true;
+          }
+        }
+
+        // Fetch earnings
+        const earnRes = await API.get('/drivers/earnings');
+        if (earnRes.success) {
+          document.getElementById('todayEarnings').textContent = `PHP ${earnRes.data.todayEarnings}`;
+          document.getElementById('todayTrips').textContent = earnRes.data.todayTrips;
+        }
+
+        // Check active trip
+        const tripRes = await API.get('/rides?limit=1');
+        if (tripRes.success && tripRes.data.length > 0) {
+          const ongoing = tripRes.data.find(r => ['accepted', 'driver_arriving', 'driver_arrived', 'trip_started'].includes(r.status));
+          if (ongoing) {
+            document.getElementById('activeTripBanner').style.display = 'block';
+            document.getElementById('activeTripStatus').textContent = ongoing.status.replace(/_/g, ' ').toUpperCase();
+            document.getElementById('activeTripPassenger').textContent = `Passenger: ${ongoing.passenger.firstName} ${ongoing.passenger.lastName} (PHP ${ongoing.estimatedFare})`;
+            document.getElementById('activeTripRoute').textContent = `${ongoing.pickup.address} &rarr; ${ongoing.destination.address}`;
+          }
+        }
+
+        fetchRequests();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function updateOnlineUI() {
+      const dot = document.getElementById('onlineDot');
+      const text = document.getElementById('onlineText');
+      const btn = document.getElementById('toggleOnlineBtn');
+
+      if (isOnline) {
+        dot.style.backgroundColor = 'var(--success)';
+        text.textContent = 'ONLINE';
+        text.style.color = 'var(--success)';
+        btn.textContent = 'Go Offline';
+        btn.className = 'btn btn-secondary btn-sm';
+      } else {
+        dot.style.backgroundColor = '#94A3B8';
+        text.textContent = 'OFFLINE';
+        text.style.color = 'var(--text-muted)';
+        btn.textContent = 'Go Online';
+        btn.className = 'btn btn-primary btn-sm';
+      }
+    }
+
+    async function toggleOnlineStatus() {
+      try {
+        const nextState = !isOnline;
+        const res = await API.put('/drivers/availability', { isOnline: nextState });
+        if (res.success) {
+          isOnline = res.data.isOnline;
+          updateOnlineUI();
+          fetchRequests();
+        }
+      } catch (err) {
+        alert(err.message || 'Could not update availability');
+      }
+    }
+
+    async function fetchRequests() {
+      const container = document.getElementById('requestsContainer');
+      if (!isOnline) {
+        container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">You are currently <strong>OFFLINE</strong>. Go online to view and accept nearby ride requests.</div>';
+        return;
+      }
+
+      try {
+        const res = await API.get('/drivers/ride-requests');
+        if (res.success) {
+          const rides = res.data;
+          if (rides.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No new ride requests right now. Waiting for passengers in Tuguegarao City...</div>';
+            return;
+          }
+
+          container.innerHTML = '';
+          rides.forEach(r => {
+            const card = document.createElement('div');
+            card.style.cssText = 'border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;';
+            card.innerHTML = `
+              <div>
+                <span class="badge badge-warning" style="margin-bottom: 0.35rem;">NEW REQUEST</span>
+                <div style="font-weight: 700; font-size: 1.05rem;">Passenger: ${r.passenger ? r.passenger.firstName : 'Passenger'}</div>
+                <div style="font-size: 0.9rem; margin-top: 0.25rem;">
+                  <strong>📍 Pickup:</strong> ${r.pickup.address} (${r.pickup.barangay || 'Tuguegarao'})
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-muted);">
+                  <strong>🏁 Destination:</strong> ${r.destination.address}
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.35rem;">
+                  Distance: ~${r.estimatedDistanceKm} km • Service: <strong style="text-transform: capitalize;">${r.serviceType}</strong>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">PHP ${r.estimatedFare}</div>
+                <button class="btn btn-primary" onclick="acceptRide('${r._id}')">Accept Ride</button>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function acceptRide(rideId) {
+      if (!confirm('Accept this ride request?')) return;
+      try {
+        const res = await API.put(`/rides/${rideId}/accept`, {});
+        if (res.success) {
+          alert('Ride accepted! Redirecting to active trip manager...');
+          window.location.href = `/driver/active-trip.html?id=${rideId}`;
+        }
+      } catch (err) {
+        alert(err.message || 'Could not accept ride');
+        fetchRequests();
+      }
+    }
+
+    loadDriverDashboard();
+    // Poll requests every 6 seconds when online
+    setInterval(() => {
+      if (isOnline) fetchRequests();
+    }, 6000);
+  </script>
+</body>
+</html>

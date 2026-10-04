@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Earnings & Reports — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Verified Driver</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/available-rides.html"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html" class="active"><span>💰</span> Earnings Summary</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/verification.html"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/profile.html"><span>👤</span> Driver Profile</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Driver Earnings Breakdown</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon primary">💰</div>
+            <div>
+              <div class="stat-value" id="totEarnings">PHP 0</div>
+              <div class="stat-label">Total Recorded Earnings</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success">📅</div>
+            <div>
+              <div class="stat-value" id="tdayEarnings">PHP 0</div>
+              <div class="stat-label">Today's Total</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon info">📈</div>
+            <div>
+              <div class="stat-value" id="avgTripFare">PHP 0</div>
+              <div class="stat-label">Average Fare / Trip</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warning">🛺</div>
+            <div>
+              <div class="stat-value" id="totCompletedTrips">0</div>
+              <div class="stat-label">Total Completed Trips</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Completed Trips Log -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Completed Trips Revenue Ledger</div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Completed At</th>
+                  <th>Service</th>
+                  <th>Pickup & Destination</th>
+                  <th>Distance</th>
+                  <th>Payment Type</th>
+                  <th>Fare Earned</th>
+                </tr>
+              </thead>
+              <tbody id="earningsTableBody">
+                <tr><td colspan="6" style="text-align: center;">Loading ledger...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/driver/dashboard.html" class="mobile-nav-item"><span class="icon">📊</span>Home</a>
+    <a href="/driver/available-rides.html" class="mobile-nav-item"><span class="icon">📍</span>Requests</a>
+    <a href="/driver/active-trip.html" class="mobile-nav-item"><span class="icon">⚡</span>Trip</a>
+    <a href="/driver/earnings.html" class="mobile-nav-item active"><span class="icon">💰</span>Earnings</a>
+    <a href="/driver/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['driver']);
+    Nav.renderHeader('Earnings Summary');
+
+    async function loadEarnings() {
+      try {
+        const res = await API.get('/drivers/earnings');
+        if (res.success) {
+          const d = res.data;
+          document.getElementById('totEarnings').textContent = `PHP ${d.totalEarnings}`;
+          document.getElementById('tdayEarnings').textContent = `PHP ${d.todayEarnings}`;
+          document.getElementById('avgTripFare').textContent = `PHP ${d.averageFare}`;
+          document.getElementById('totCompletedTrips').textContent = d.totalTrips;
+
+          const tbody = document.getElementById('earningsTableBody');
+          if (!d.rides || d.rides.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No completed trips recorded yet. Complete your first ride in Tuguegarao!</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          d.rides.forEach(r => {
+            const dateStr = new Date(r.completedAt || r.updatedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${dateStr}</td>
+              <td style="text-transform: capitalize;">${r.serviceType}</td>
+              <td>${r.pickup.address} &rarr; ${r.destination.address}</td>
+              <td>~${r.estimatedDistanceKm} km</td>
+              <td><span class="badge badge-info">${r.paymentMethod.replace(/_/g, ' ')}</span></td>
+              <td><strong style="color: var(--primary); font-size: 1.05rem;">PHP ${r.finalFare || r.estimatedFare}</strong></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadEarnings();
+  </script>
+</body>
+</html>

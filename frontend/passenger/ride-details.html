@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Receipt & Details — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/ride.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">User</div>
+          <div class="user-role user-role-display">Passenger</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/passenger/dashboard.html"><span>🏠</span> Dashboard</a></li>
+        <li><a href="/passenger/request-ride.html"><span>📍</span> Request a Ride</a></li>
+        <li><a href="/passenger/active-ride.html"><span>⚡</span> Active Ride</a></li>
+        <li><a href="/passenger/ride-history.html" class="active"><span>📜</span> Ride History</a></li>
+        <li><a href="/passenger/saved-places.html"><span>⭐</span> Saved Places</a></li>
+        <li><a href="/passenger/profile.html"><span>👤</span> Profile Settings</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Trip Summary & Official Receipt</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Print Receipt</button>
+          <a href="/passenger/ride-history.html" class="btn btn-secondary btn-sm">&larr; Back to History</a>
+        </div>
+      </header>
+
+      <div class="dashboard-content" style="max-width: 800px;">
+        <div class="card" id="receiptCard">
+          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid var(--primary); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="logo-mark">P.</div>
+                <h2 style="font-size: 1.5rem;">P_Dot Ride Receipt</h2>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Tuguegarao City Local Transport Network</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary);" id="rcpNumber">PDOT-12345678</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);" id="rcpDate">Date: -</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+              <h4 style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase;">Passenger</h4>
+              <div style="font-weight: 700;" id="rcpPassenger">-</div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);" id="rcpPhone">-</div>
+            </div>
+            <div>
+              <h4 style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase;">Driver & Vehicle</h4>
+              <div style="font-weight: 700;" id="rcpDriver">-</div>
+              <div style="font-size: 0.85rem;" id="rcpVehicle">-</div>
+            </div>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="margin-bottom: 0.5rem;">
+              <strong>📍 Pickup:</strong> <span id="rcpPickup">-</span>
+            </div>
+            <div>
+              <strong>🏁 Destination:</strong> <span id="rcpDrop">-</span>
+            </div>
+          </div>
+
+          <div class="fare-breakdown-box">
+            <div class="fare-row">
+              <span>Service Type:</span>
+              <span id="rcpService" style="text-transform: capitalize;">Tricycle</span>
+            </div>
+            <div class="fare-row">
+              <span>Estimated Distance:</span>
+              <span id="rcpDist">-</span>
+            </div>
+            <div class="fare-row">
+              <span>Payment Method:</span>
+              <span id="rcpPayment">-</span>
+            </div>
+            <div class="fare-row">
+              <span>Payment Status:</span>
+              <span id="rcpPayStatus" class="badge badge-success">PAID</span>
+            </div>
+            <div class="fare-row total">
+              <span>Total Fare Paid:</span>
+              <span id="rcpTotal">PHP 0</span>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 2rem; font-size: 0.8rem; color: var(--text-muted);">
+            Thank you for riding with P_Dot Tuguegarao! Serving Cagayan Valley with pride.
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth();
+    Nav.renderHeader('Trip Receipt');
+
+    async function loadReceipt() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const rideId = urlParams.get('id');
+
+      if (!rideId) {
+        alert('No ride ID specified');
+        window.location.href = '/passenger/ride-history.html';
+        return;
+      }
+
+      try {
+        const res = await API.get(`/rides/${rideId}/summary`);
+        if (res.success) {
+          const d = res.data;
+          document.getElementById('rcpNumber').textContent = d.receiptNumber;
+          document.getElementById('rcpDate').textContent = new Date(d.date).toLocaleString('en-PH');
+          document.getElementById('rcpPassenger').textContent = d.passengerName;
+          document.getElementById('rcpPhone').textContent = d.passengerPhone;
+          document.getElementById('rcpDriver').textContent = d.driverName;
+          document.getElementById('rcpVehicle').textContent = d.vehicleDetails;
+          document.getElementById('rcpPickup').textContent = `${d.pickup.label || ''} (${d.pickup.address})`;
+          document.getElementById('rcpDrop').textContent = `${d.destination.label || ''} (${d.destination.address})`;
+          document.getElementById('rcpService').textContent = d.serviceType;
+          document.getElementById('rcpDist').textContent = `~${d.estimatedDistanceKm} km`;
+          document.getElementById('rcpPayment').textContent = d.paymentMethod.replace(/_/g, ' ').toUpperCase();
+          document.getElementById('rcpPayStatus').textContent = d.paymentStatus.toUpperCase();
+          document.getElementById('rcpTotal').textContent = `PHP ${d.totalFare}`;
+        }
+      } catch (err) {
+        alert(err.message || 'Error loading summary');
+      }
+    }
+
+    loadReceipt();
+  </script>
+</body>
+</html>

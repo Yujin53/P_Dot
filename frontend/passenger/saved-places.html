@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved Places — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">User</div>
+          <div class="user-role user-role-display">Passenger</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/passenger/dashboard.html"><span>🏠</span> Dashboard</a></li>
+        <li><a href="/passenger/request-ride.html"><span>📍</span> Request a Ride</a></li>
+        <li><a href="/passenger/active-ride.html"><span>⚡</span> Active Ride</a></li>
+        <li><a href="/passenger/ride-history.html"><span>📜</span> Ride History</a></li>
+        <li><a href="/passenger/saved-places.html" class="active"><span>⭐</span> Saved Places</a></li>
+        <li><a href="/passenger/ratings.html"><span>★</span> Reviews & Ratings</a></li>
+        <li><a href="/passenger/profile.html"><span>👤</span> Profile Settings</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Saved Frequent Places</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" onclick="openAddPlaceModal()">+ Add New Place</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div id="placesContainer" class="grid-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Place Modal -->
+  <div class="modal-backdrop" id="placeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Save a Location</h3>
+        <button class="modal-close" onclick="closeAddPlaceModal()">&times;</button>
+      </div>
+      <form id="addPlaceForm">
+        <div class="form-group">
+          <label>Label</label>
+          <input type="text" id="placeLabel" class="form-control" placeholder="e.g. Home, Office, Dorm, School" required>
+        </div>
+        <div class="form-group">
+          <label>Address / Street</label>
+          <input type="text" id="placeAddress" class="form-control" placeholder="e.g. Luna St near SPUP" required>
+        </div>
+        <div class="form-group">
+          <label>Barangay</label>
+          <input type="text" id="placeBarangay" class="form-control" placeholder="e.g. Ugac Norte" required>
+        </div>
+        <div class="form-group">
+          <label>Landmark (Optional)</label>
+          <input type="text" id="placeLandmark" class="form-control" placeholder="e.g. In front of 7-Eleven">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Place</button>
+      </form>
+    </div>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/passenger/dashboard.html" class="mobile-nav-item"><span class="icon">🏠</span>Home</a>
+    <a href="/passenger/request-ride.html" class="mobile-nav-item"><span class="icon">📍</span>Book</a>
+    <a href="/passenger/active-ride.html" class="mobile-nav-item"><span class="icon">⚡</span>Active</a>
+    <a href="/passenger/ride-history.html" class="mobile-nav-item"><span class="icon">📜</span>History</a>
+    <a href="/passenger/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['passenger']);
+    Nav.renderHeader('Saved Places');
+
+    async function loadPlaces() {
+      try {
+        const res = await API.get('/users/saved-places');
+        const container = document.getElementById('placesContainer');
+
+        if (res.success) {
+          const places = res.data;
+          if (places.length === 0) {
+            container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No saved places yet. Add your home, campus, or workplace for 1-click booking!</div>';
+            return;
+          }
+
+          container.innerHTML = '';
+          places.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                <h3 style="font-size: 1.15rem; color: var(--primary);">⭐ ${p.label}</h3>
+                <button class="btn btn-outline btn-danger btn-sm" onclick="deletePlace('${p._id}')">Delete</button>
+              </div>
+              <p style="font-size: 0.9rem; margin-bottom: 0.25rem;"><strong>Address:</strong> ${p.address}</p>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;"><strong>Barangay:</strong> ${p.barangay || 'Tuguegarao City'}</p>
+              <a href="/passenger/request-ride.html" class="btn btn-outline btn-sm" style="width: 100%;">Book Ride Here</a>
+            `;
+            container.appendChild(card);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openAddPlaceModal() {
+      document.getElementById('placeModal').classList.add('active');
+    }
+
+    function closeAddPlaceModal() {
+      document.getElementById('placeModal').classList.remove('active');
+    }
+
+    document.getElementById('addPlaceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await API.post('/users/saved-places', {
+          label: document.getElementById('placeLabel').value.trim(),
+          address: document.getElementById('placeAddress').value.trim(),
+          barangay: document.getElementById('placeBarangay').value.trim(),
+          landmark: document.getElementById('placeLandmark').value.trim()
+        });
+
+        if (res.success) {
+          closeAddPlaceModal();
+          e.target.reset();
+          loadPlaces();
+        }
+      } catch (err) {
+        alert(err.message || 'Error saving place');
+      }
+    });
+
+    async function deletePlace(id) {
+      if (!confirm('Are you sure you want to remove this saved place?')) return;
+      try {
+        await API.delete(`/users/saved-places/${id}`);
+        loadPlaces();
+      } catch (e) {
+        alert('Failed to delete place');
+      }
+    }
+
+    loadPlaces();
+  </script>
+</body>
+</html>

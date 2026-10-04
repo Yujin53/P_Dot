@@ -1,0 +1,12 @@
+node_modules/
+.env
+uploads/*
+!uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
+!backend/uploads/profiles/.gitkeep
+!backend/uploads/driver-documents/.gitkeep
+!backend/uploads/vehicles/.gitkeep
+!backend/uploads/support/.gitkeep
+.DS_Store
+Thumbs.db

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage All Rides — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html" class="active"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/notifications.html"><span>🔔</span> Notifications & Broadcasts</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+        <li><a href="/admin/settings.html"><span>⚙️</span> Platform Settings</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">All Rides & Dispatch Monitor</h1>
+        <div class="topbar-actions">
+          <select id="rideStatusFilter" class="form-control" style="width: 180px;" onchange="loadRides(1)">
+            <option value="">All Statuses</option>
+            <option value="requested">Requested</option>
+            <option value="searching">Searching</option>
+            <option value="accepted">Accepted</option>
+            <option value="driver_arrived">Driver Arrived</option>
+            <option value="trip_started">Trip In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled_by_passenger">Cancelled by Passenger</option>
+            <option value="cancelled_by_driver">Cancelled by Driver</option>
+            <option value="cancelled_by_admin">Cancelled by Admin</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ride ID</th>
+                  <th>Date</th>
+                  <th>Service</th>
+                  <th>Passenger</th>
+                  <th>Assigned Driver</th>
+                  <th>Route</th>
+                  <th>Fare</th>
+                  <th>Status</th>
+                  <th>Admin Action</th>
+                </tr>
+              </thead>
+              <tbody id="ridesTbody">
+                <tr><td colspan="9" style="text-align: center;">Loading rides...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <div id="pageInfo">Showing page 1</div>
+            <div class="pagination-controls">
+              <button class="btn btn-outline btn-sm" id="prevBtn" onclick="changePage(-1)">Previous</button>
+              <button class="btn btn-outline btn-sm" id="nextBtn" onclick="changePage(1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('All Rides & Dispatch');
+
+    let curPage = 1;
+    let totPages = 1;
+
+    async function loadRides(page = 1) {
+      curPage = page;
+      const status = document.getElementById('rideStatusFilter').value;
+      let url = `/rides?page=${page}&limit=15`;
+      if (status) url += `&status=${status}`;
+
+      try {
+        const res = await API.get(url);
+        const tbody = document.getElementById('ridesTbody');
+
+        if (res.success) {
+          const rides = res.data;
+          totPages = res.pagination ? res.pagination.totalPages : 1;
+          document.getElementById('pageInfo').textContent = `Page ${curPage} of ${totPages || 1}`;
+          document.getElementById('prevBtn').disabled = curPage <= 1;
+          document.getElementById('nextBtn').disabled = curPage >= totPages;
+
+          if (rides.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem;">No rides found.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          rides.forEach(r => {
+            const dateStr = new Date(r.requestedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const passStr = r.passenger ? `${r.passenger.firstName} ${r.passenger.lastName}` : 'N/A';
+            const drvStr = r.driver && r.driver.user ? `${r.driver.user.firstName} ${r.driver.user.lastName}` : 'Unassigned';
+
+            let badge = 'badge-warning';
+            if (r.status === 'completed') badge = 'badge-success';
+            else if (r.status.startsWith('cancelled')) badge = 'badge-danger';
+
+            const canCancel = !r.status.startsWith('cancelled') && r.status !== 'completed';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><code>#${r._id.toString().slice(-6).toUpperCase()}</code></td>
+              <td>${dateStr}</td>
+              <td style="text-transform: capitalize;">${r.serviceType}</td>
+              <td>${passStr}</td>
+              <td>${drvStr}</td>
+              <td>
+                <div style="font-size: 0.8rem;">${r.pickup.address}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">&rarr; ${r.destination.address}</div>
+              </td>
+              <td>PHP ${r.finalFare || r.estimatedFare}</td>
+              <td><span class="badge ${badge}">${r.status.replace(/_/g, ' ')}</span></td>
+              <td>
+                <div style="display: flex; gap: 0.35rem;">
+                  <a href="/passenger/ride-details.html?id=${r._id}" class="btn btn-outline btn-sm">Receipt</a>
+                  ${canCancel ? `<button class="btn btn-danger btn-sm" onclick="adminCancel('${r._id}')">Override Cancel</button>` : ''}
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function adminCancel(rideId) {
+      const reason = prompt('Specify administrative cancellation reason:');
+      if (!reason) return;
+      try {
+        const res = await API.put(`/admin/rides/${rideId}/cancel`, { cancellationReason: reason });
+        if (res.success) {
+          alert('Ride administratively cancelled');
+          loadRides(curPage);
+        }
+      } catch (e) {
+        alert(e.message || 'Cancellation failed');
+      }
+    }
+
+    function changePage(delta) {
+      const next = curPage + delta;
+      if (next >= 1 && next <= totPages) {
+        loadRides(next);
+      }
+    }
+
+    loadRides(1);
+  </script>
+</body>
+</html>

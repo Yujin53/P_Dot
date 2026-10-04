@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Locations & Landmarks — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html" class="active"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Tuguegarao Landmarks & Service Areas</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" onclick="openAddLocModal()">+ Add Landmark</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Place / Landmark Name</th>
+                  <th>Type</th>
+                  <th>Barangay</th>
+                  <th>Address</th>
+                  <th>Coordinates</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="locationsTbody">
+                <tr><td colspan="6" style="text-align: center;">Loading locations...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Location Modal -->
+  <div class="modal-backdrop" id="locModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Tuguegarao Landmark</h3>
+        <button class="modal-close" onclick="closeAddLocModal()">&times;</button>
+      </div>
+      <form id="locForm">
+        <div class="form-group">
+          <label>Landmark Name</label>
+          <input type="text" id="locName" class="form-control" placeholder="e.g. Cagayan Valley Medical Center" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select id="locType" class="form-control" required>
+              <option value="landmark">Landmark</option>
+              <option value="school">School / University</option>
+              <option value="hospital">Hospital</option>
+              <option value="mall">Mall / Commercial</option>
+              <option value="terminal">Terminal / Airport</option>
+              <option value="government_office">Government Office</option>
+              <option value="barangay">Barangay Center</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Barangay</label>
+            <input type="text" id="locBarangay" class="form-control" placeholder="e.g. Carig Sur" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Full Address</label>
+          <input type="text" id="locAddress" class="form-control" placeholder="e.g. Dalan na Pagayaya, Carig Sur, Tuguegarao" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Latitude</label>
+            <input type="number" step="0.0001" id="locLat" class="form-control" value="17.6132" required>
+          </div>
+          <div class="form-group">
+            <label>Longitude</label>
+            <input type="number" step="0.0001" id="locLon" class="form-control" value="121.7270" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Location</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('Locations & Landmarks');
+
+    async function loadLocations() {
+      try {
+        const res = await API.get('/locations');
+        const tbody = document.getElementById('locationsTbody');
+
+        if (res.success) {
+          const list = res.data;
+          tbody.innerHTML = '';
+          list.forEach(l => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${l.name}</strong></td>
+              <td><span class="badge badge-info" style="text-transform: capitalize;">${l.type.replace(/_/g, ' ')}</span></td>
+              <td>${l.barangay}</td>
+              <td style="font-size: 0.85rem; color: var(--text-muted);">${l.address}</td>
+              <td><code>${l.latitude.toFixed(4)}, ${l.longitude.toFixed(4)}</code></td>
+              <td>
+                <button class="btn btn-danger btn-sm" onclick="deleteLoc('${l._id}')">Remove</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function openAddLocModal() {
+      document.getElementById('locModal').classList.add('active');
+    }
+
+    function closeAddLocModal() {
+      document.getElementById('locModal').classList.remove('active');
+    }
+
+    document.getElementById('locForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await API.post('/admin/locations', {
+          name: document.getElementById('locName').value.trim(),
+          type: document.getElementById('locType').value,
+          barangay: document.getElementById('locBarangay').value.trim(),
+          address: document.getElementById('locAddress').value.trim(),
+          latitude: document.getElementById('locLat').value,
+          longitude: document.getElementById('locLon').value,
+          isServiceArea: true
+        });
+
+        if (res.success) {
+          closeAddLocModal();
+          e.target.reset();
+          loadLocations();
+        }
+      } catch (err) {
+        alert(err.message || 'Error saving location');
+      }
+    });
+
+    async function deleteLoc(id) {
+      if (!confirm('Deactivate this location?')) return;
+      try {
+        const res = await API.delete(`/admin/locations/${id}`);
+        if (res.success) {
+          loadLocations();
+        }
+      } catch (e) {
+        alert(e.message || 'Action failed');
+      }
+    }
+
+    loadLocations();
+  </script>
+</body>
+</html>

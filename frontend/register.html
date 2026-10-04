@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passenger Sign Up — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="logo-container">
+      <div class="logo-mark">P.</div>
+      <div class="logo-text">P_Dot</div>
+      <span class="logo-tag">Tuguegarao</span>
+    </a>
+    <div>
+      <a href="/login.html" class="btn btn-outline btn-sm">Log In</a>
+    </div>
+  </nav>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Join P_Dot as Passenger</h2>
+        <p>Book local tricycle and vehicle rides with confidence</p>
+      </div>
+
+      <div id="alertBox" class="alert" style="display: none;"></div>
+
+      <form id="registerForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" class="form-control" placeholder="Juan" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" class="form-control" placeholder="Dela Cruz" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" class="form-control" placeholder="juandelacruz" required minlength="3">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="juan@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Mobile Number (PH)</label>
+          <input type="tel" id="phone" class="form-control" placeholder="09171234567" required pattern="(09|\+639|639)[0-9]{9}">
+          <div class="form-hint">Philippine standard format: 09XXXXXXXXX</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" class="form-control" placeholder="Min. 6 chars" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat password" required minlength="6">
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">Create Passenger Account</button>
+      </form>
+
+      <div class="auth-footer">
+        <div>Already have an account? <a href="/login.html">Log in here</a></div>
+        <div style="margin-top: 0.5rem;">Are you a transport driver? <a href="/driver-register.html">Apply as Driver</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertBox = document.getElementById('alertBox');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const pass = document.getElementById('password').value;
+      const cpass = document.getElementById('confirmPassword').value;
+
+      if (pass !== cpass) {
+        alertBox.className = 'alert alert-error';
+        alertBox.textContent = 'Passwords do not match.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      alertBox.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering...';
+
+      const payload = {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        password: pass,
+        confirmPassword: cpass
+      };
+
+      try {
+        const res = await API.post('/auth/register', payload);
+        if (res.success) {
+          window.location.href = '/login.html?registered=1';
+        }
+      } catch (err) {
+        alertBox.className = 'alert alert-error';
+        alertBox.textContent = err.message || 'Registration failed.';
+        alertBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Passenger Account';
+      }
+    });
+  </script>
+</body>
+</html>

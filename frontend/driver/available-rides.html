@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Rides Queue — P_Dot Driver</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Verified Driver</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/available-rides.html" class="active"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html"><span>💰</span> Earnings Summary</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/verification.html"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/profile.html"><span>👤</span> Driver Profile</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Available Rides Queue</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-outline btn-sm" onclick="loadRequests()">🔄 Refresh List</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div id="queueList">
+            <div style="text-align: center; padding: 2rem;">Loading ride queue...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/driver/dashboard.html" class="mobile-nav-item"><span class="icon">📊</span>Home</a>
+    <a href="/driver/available-rides.html" class="mobile-nav-item active"><span class="icon">📍</span>Requests</a>
+    <a href="/driver/active-trip.html" class="mobile-nav-item"><span class="icon">⚡</span>Trip</a>
+    <a href="/driver/earnings.html" class="mobile-nav-item"><span class="icon">💰</span>Earnings</a>
+    <a href="/driver/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['driver']);
+    Nav.renderHeader('Available Rides');
+
+    async function loadRequests() {
+      const container = document.getElementById('queueList');
+      try {
+        const res = await API.get('/drivers/ride-requests');
+        if (res.success) {
+          const rides = res.data;
+          if (rides.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted);">No matching ride requests in queue right now. Ensure your driver status is set to ONLINE in dashboard.</div>';
+            return;
+          }
+
+          container.innerHTML = '';
+          rides.forEach(r => {
+            const div = document.createElement('div');
+            div.style.cssText = 'border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;';
+            div.innerHTML = `
+              <div>
+                <span class="badge badge-warning" style="margin-bottom: 0.35rem;">REQUESTED</span>
+                <div style="font-weight: 700; font-size: 1.1rem;">Passenger: ${r.passenger ? r.passenger.firstName : 'Passenger'}</div>
+                <div style="font-size: 0.95rem; margin-top: 0.3rem;"><strong>📍 Pickup:</strong> ${r.pickup.address}</div>
+                <div style="font-size: 0.95rem; color: var(--text-muted);"><strong>🏁 Destination:</strong> ${r.destination.address}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.35rem;">
+                  Distance: ~${r.estimatedDistanceKm} km • Est. Time: ~${r.estimatedDurationMin} mins
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">PHP ${r.estimatedFare}</div>
+                <button class="btn btn-primary" onclick="acceptFromQueue('${r._id}')">Accept Booking</button>
+              </div>
+            `;
+            container.appendChild(div);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function acceptFromQueue(id) {
+      if (!confirm('Accept this ride request?')) return;
+      try {
+        const res = await API.put(`/rides/${id}/accept`, {});
+        if (res.success) {
+          window.location.href = `/driver/active-trip.html?id=${id}`;
+        }
+      } catch (e) {
+        alert(e.message || 'Could not accept ride');
+        loadRequests();
+      }
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>

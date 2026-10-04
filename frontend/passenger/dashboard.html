@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passenger Dashboard — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/ride.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+        </a>
+      </div>
+
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Passenger</div>
+          <div class="user-role user-role-display">Passenger</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li><a href="/passenger/dashboard.html" class="active"><span>🏠</span> Dashboard</a></li>
+        <li><a href="/passenger/request-ride.html"><span>📍</span> Request a Ride</a></li>
+        <li><a href="/passenger/active-ride.html"><span>⚡</span> Active Ride</a></li>
+        <li><a href="/passenger/ride-history.html"><span>📜</span> Ride History</a></li>
+        <li><a href="/passenger/saved-places.html"><span>⭐</span> Saved Places</a></li>
+        <li><a href="/passenger/ratings.html"><span>★</span> Reviews & Ratings</a></li>
+        <li><a href="/passenger/profile.html"><span>👤</span> Profile Settings</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title" id="pageTitle">Passenger Dashboard</h1>
+        <div class="topbar-actions">
+          <button class="notif-bell-btn" id="notifBell" title="Notifications">
+            🔔 <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+          </button>
+          <a href="/passenger/request-ride.html" class="btn btn-primary btn-sm">+ Book Ride</a>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <!-- Welcome banner -->
+        <div class="card" style="background: linear-gradient(135deg, var(--primary) 0%, #0D5D57 100%); color: white;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Mabuhay, <span class="user-name-display">Passenger</span>!</h2>
+          <p style="opacity: 0.9; margin-bottom: 1.25rem;">Where are you heading in Tuguegarao City today?</p>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="/passenger/request-ride.html" class="btn btn-accent btn-sm">Request Ride Now</a>
+            <a href="/passenger/saved-places.html" class="btn btn-outline btn-sm" style="color: white; border-color: rgba(255,255,255,0.4);">Manage Saved Places</a>
+          </div>
+        </div>
+
+        <!-- Active Ride Banner if currently riding -->
+        <div id="activeRideCard" class="card" style="display: none; border-left: 4px solid var(--accent); background: #FFFBEB;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span class="badge badge-warning" id="activeRideStatus">SEARCHING</span>
+              <h3 style="margin-top: 0.5rem; font-size: 1.15rem;" id="activeRideDestination">Destination</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted);" id="activeRideDetails">Pickup info...</p>
+            </div>
+            <div>
+              <a href="/passenger/active-ride.html" class="btn btn-primary btn-sm">Track Ride &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon primary">🛺</div>
+            <div>
+              <div class="stat-value" id="totalCompletedRides">0</div>
+              <div class="stat-label">Completed Rides</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success">⭐</div>
+            <div>
+              <div class="stat-value" id="savedPlacesCount">0</div>
+              <div class="stat-label">Saved Places</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon info">💳</div>
+            <div>
+              <div class="stat-value" id="preferredPayment">Cash</div>
+              <div class="stat-label">Default Payment</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Rides Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent Trips</div>
+            <a href="/passenger/ride-history.html" class="btn btn-outline btn-sm">View All</a>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Service</th>
+                  <th>Pickup & Destination</th>
+                  <th>Driver & Vehicle</th>
+                  <th>Fare</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recentRidesTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Loading recent trips...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav-bar">
+    <a href="/passenger/dashboard.html" class="mobile-nav-item active"><span class="icon">🏠</span>Home</a>
+    <a href="/passenger/request-ride.html" class="mobile-nav-item"><span class="icon">📍</span>Book</a>
+    <a href="/passenger/active-ride.html" class="mobile-nav-item"><span class="icon">⚡</span>Active</a>
+    <a href="/passenger/ride-history.html" class="mobile-nav-item"><span class="icon">📜</span>History</a>
+    <a href="/passenger/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    if (Auth.checkAuth(['passenger'])) {
+      Nav.renderHeader('Passenger Dashboard');
+      loadPassengerDashboard();
+    }
+
+    async function loadPassengerDashboard() {
+      try {
+        // Fetch recent rides
+        const res = await API.get('/rides?limit=5');
+        const activeCard = document.getElementById('activeRideCard');
+        const tbody = document.getElementById('recentRidesTableBody');
+
+        if (res.success) {
+          const rides = res.data;
+          document.getElementById('totalCompletedRides').textContent = res.pagination ? res.pagination.total : rides.length;
+
+          // Check for active ride
+          const ongoing = rides.find(r => ['requested', 'searching', 'accepted', 'driver_arriving', 'driver_arrived', 'trip_started'].includes(r.status));
+          if (ongoing) {
+            activeCard.style.display = 'block';
+            document.getElementById('activeRideStatus').textContent = ongoing.status.replace(/_/g, ' ').toUpperCase();
+            document.getElementById('activeRideDestination').textContent = `To: ${ongoing.destination.label || ongoing.destination.address}`;
+            document.getElementById('activeRideDetails').textContent = `Pickup: ${ongoing.pickup.address} (${ongoing.serviceType}) • Fare: PHP ${ongoing.estimatedFare}`;
+          } else {
+            activeCard.style.display = 'none';
+          }
+
+          if (rides.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No rides requested yet. Try booking a ride across Tuguegarao!</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          rides.forEach(r => {
+            const dateStr = new Date(r.requestedAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const driverInfo = r.driver && r.driver.user ? `${r.driver.user.firstName} (${r.vehicle ? r.vehicle.plateNumber : ''})` : 'Awaiting Driver';
+            
+            let statusBadge = 'badge-neutral';
+            if (r.status === 'completed') statusBadge = 'badge-success';
+            else if (r.status.startsWith('cancelled')) statusBadge = 'badge-danger';
+            else statusBadge = 'badge-warning';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${dateStr}</td>
+              <td style="text-transform: capitalize;"><strong>${r.serviceType}</strong></td>
+              <td>
+                <div style="font-size: 0.85rem;"><strong>From:</strong> ${r.pickup.label || r.pickup.address}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);"><strong>To:</strong> ${r.destination.label || r.destination.address}</div>
+              </td>
+              <td>${driverInfo}</td>
+              <td><strong>PHP ${r.finalFare || r.estimatedFare}</strong></td>
+              <td><span class="badge ${statusBadge}">${r.status.replace(/_/g, ' ')}</span></td>
+              <td>
+                <a href="/passenger/ride-details.html?id=${r._id}" class="btn btn-outline btn-sm">Details</a>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        // Fetch saved places count
+        const placesRes = await API.get('/users/saved-places');
+        if (placesRes.success) {
+          document.getElementById('savedPlacesCount').textContent = placesRes.data.length;
+        }
+
+      } catch (err) {
+        console.error('Error loading passenger dashboard:', err);
+      }
+    }
+  </script>
+</body>
+</html>

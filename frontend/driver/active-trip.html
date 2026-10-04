@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Active Trip Manager — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/ride.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Verified Driver</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/available-rides.html"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html" class="active"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html"><span>💰</span> Earnings Summary</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/verification.html"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/profile.html"><span>👤</span> Driver Profile</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Active Trip Workflow</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-outline btn-sm" onclick="fetchCurrentTrip()">🔄 Refresh</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <!-- Empty State -->
+        <div id="noTripBox" class="card" style="display: none; text-align: center; padding: 3rem 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🛣️</div>
+          <h2>No Active Trip Assigned</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">You are not currently conducting a trip. Check available requests to accept a ride.</p>
+          <a href="/driver/dashboard.html" class="btn btn-primary">Go to Driver Dashboard</a>
+        </div>
+
+        <!-- Trip Workflow Box -->
+        <div id="tripManagerBox" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+              <div>
+                <span class="badge badge-success" id="driverTripStatus">TRIP STATUS</span>
+                <h2 style="font-size: 1.4rem; margin-top: 0.35rem;" id="passengerHeading">Passenger Name</h2>
+                <div style="font-size: 0.9rem; color: var(--text-muted);">
+                  📞 Contact: <strong id="passengerPhoneNum">0917-000-0000</strong>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Total Fare Due</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);" id="tripFareAmount">PHP 0</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);" id="paymentType">Cash Payment</div>
+              </div>
+            </div>
+
+            <!-- Route Details -->
+            <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
+              <div style="margin-bottom: 0.75rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Pickup Location</div>
+                <div style="font-size: 1.05rem; font-weight: 700;" id="tripPickup">-</div>
+                <div style="font-size: 0.85rem; color: var(--accent);" id="passengerNotesText"></div>
+              </div>
+              <div style="border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Drop-off Destination</div>
+                <div style="font-size: 1.05rem; font-weight: 700;" id="tripDrop">-</div>
+              </div>
+            </div>
+
+            <!-- Action Transition Buttons (Strict State Machine) -->
+            <div style="background: #FFFFFF; border: 2px solid var(--primary); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;">
+              <h3 style="margin-bottom: 0.5rem;" id="nextActionTitle">Next Action</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;" id="nextActionDesc">Update trip status as you progress.</p>
+              
+              <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;" id="actionBtnContainer">
+                <!-- Dynamically populated based on valid state transitions -->
+              </div>
+            </div>
+
+            <!-- Driver Cancellation / Issue Reporting -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+              <button class="btn btn-outline btn-danger btn-sm" onclick="driverCancelTrip()">Report Issue & Cancel</button>
+              <a href="/help.html" class="btn btn-outline btn-sm">Support Emergency</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/driver/dashboard.html" class="mobile-nav-item"><span class="icon">📊</span>Home</a>
+    <a href="/driver/available-rides.html" class="mobile-nav-item"><span class="icon">📍</span>Requests</a>
+    <a href="/driver/active-trip.html" class="mobile-nav-item active"><span class="icon">⚡</span>Trip</a>
+    <a href="/driver/earnings.html" class="mobile-nav-item"><span class="icon">💰</span>Earnings</a>
+    <a href="/driver/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['driver']);
+    Nav.renderHeader('Current Trip Workflow');
+
+    let currentRide = null;
+
+    async function fetchCurrentTrip() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rideIdParam = urlParams.get('id');
+
+        let res;
+        if (rideIdParam) {
+          res = await API.get(`/rides/${rideIdParam}`);
+        } else {
+          res = await API.get('/rides?limit=1');
+          if (res.success && res.data.length > 0) {
+            const r = res.data[0];
+            if (['accepted', 'driver_arriving', 'driver_arrived', 'trip_started'].includes(r.status)) {
+              res.data = r;
+            } else {
+              res.data = null;
+            }
+          } else {
+            res.data = null;
+          }
+        }
+
+        if (res.success && res.data && ['accepted', 'driver_arriving', 'driver_arrived', 'trip_started'].includes(res.data.status)) {
+          currentRide = res.data;
+          renderTripManager();
+        } else {
+          document.getElementById('noTripBox').style.display = 'block';
+          document.getElementById('tripManagerBox').style.display = 'none';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderTripManager() {
+      document.getElementById('noTripBox').style.display = 'none';
+      document.getElementById('tripManagerBox').style.display = 'block';
+
+      const r = currentRide;
+      document.getElementById('driverTripStatus').textContent = r.status.replace(/_/g, ' ').toUpperCase();
+      document.getElementById('passengerHeading').textContent = r.passenger ? `${r.passenger.firstName} ${r.passenger.lastName}` : 'Passenger';
+      document.getElementById('passengerPhoneNum').textContent = r.passenger ? r.passenger.phone : 'N/A';
+      document.getElementById('tripFareAmount').textContent = `PHP ${r.finalFare || r.estimatedFare}`;
+      document.getElementById('paymentType').textContent = r.paymentMethod.replace(/_/g, ' ').toUpperCase();
+      document.getElementById('tripPickup').textContent = `${r.pickup.label || ''} (${r.pickup.address})`;
+      document.getElementById('tripDrop').textContent = `${r.destination.label || ''} (${r.destination.address})`;
+
+      if (r.passengerNotes) {
+        document.getElementById('passengerNotesText').textContent = `Passenger Note: "${r.passengerNotes}"`;
+      } else {
+        document.getElementById('passengerNotesText').textContent = '';
+      }
+
+      const btnContainer = document.getElementById('actionBtnContainer');
+      const title = document.getElementById('nextActionTitle');
+      const desc = document.getElementById('nextActionDesc');
+      btnContainer.innerHTML = '';
+
+      if (r.status === 'accepted') {
+        title.textContent = 'Step 1: Heading to Pickup';
+        desc.textContent = 'Click below once you are moving towards the passenger pickup point in Tuguegarao.';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary btn-lg';
+        btn.textContent = '🚗 Start Moving (Driver Arriving)';
+        btn.onclick = () => updateStatus('driver_arriving');
+        btnContainer.appendChild(btn);
+      } else if (r.status === 'driver_arriving') {
+        title.textContent = 'Step 2: Arrived at Pickup';
+        desc.textContent = 'Click below once you have pulled up at the passenger location.';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-success btn-lg';
+        btn.textContent = '📍 I Have Arrived (Driver Arrived)';
+        btn.onclick = () => updateStatus('driver_arrived');
+        btnContainer.appendChild(btn);
+      } else if (r.status === 'driver_arrived') {
+        title.textContent = 'Step 3: Board Passenger & Start Trip';
+        desc.textContent = 'Confirm passenger identity and start meter/trip navigation.';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-accent btn-lg';
+        btn.textContent = '🏁 Passenger On Board (Start Trip)';
+        btn.onclick = () => updateStatus('trip_started');
+        btnContainer.appendChild(btn);
+      } else if (r.status === 'trip_started') {
+        title.textContent = 'Step 4: Arrived at Destination';
+        desc.textContent = 'Collect fare payment and complete the trip.';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary btn-lg';
+        btn.textContent = '✅ Complete Trip & Collect Fare';
+        btn.onclick = () => completeTrip();
+        btnContainer.appendChild(btn);
+      }
+    }
+
+    async function updateStatus(nextStatus) {
+      if (!currentRide) return;
+      try {
+        const res = await API.put(`/rides/${currentRide._id}/status`, { status: nextStatus });
+        if (res.success) {
+          currentRide = res.data;
+          renderTripManager();
+        }
+      } catch (err) {
+        alert(err.message || 'Failed to update trip status');
+      }
+    }
+
+    async function completeTrip() {
+      if (!currentRide) return;
+      const fare = currentRide.finalFare || currentRide.estimatedFare;
+      const confirmMsg = `Trip Completed! Confirm passenger paid PHP ${fare} via ${currentRide.paymentMethod}?`;
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const res = await API.put(`/rides/${currentRide._id}/status`, {
+          status: 'completed',
+          paymentStatus: 'paid',
+          finalFare: fare
+        });
+
+        if (res.success) {
+          alert('Trip successfully completed! Fare added to your daily earnings.');
+          window.location.href = '/driver/dashboard.html';
+        }
+      } catch (err) {
+        alert(err.message || 'Error completing trip');
+      }
+    }
+
+    async function driverCancelTrip() {
+      if (!currentRide) return;
+      const reason = prompt('Please enter cancellation reason (Required for drivers):');
+      if (!reason) return;
+
+      try {
+        const res = await API.put(`/rides/${currentRide._id}/cancel`, { cancellationReason: reason });
+        if (res.success) {
+          alert('Trip has been cancelled.');
+          window.location.href = '/driver/dashboard.html';
+        }
+      } catch (err) {
+        alert(err.message || 'Error cancelling trip');
+      }
+    }
+
+    fetchCurrentTrip();
+  </script>
+</body>
+</html>

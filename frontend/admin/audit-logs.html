@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security & Audit Logs — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/audit-logs.html" class="active"><span>📜</span> System Audit Logs</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Administrative Audit Trail</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Target Type</th>
+                  <th>Actor / Admin</th>
+                  <th>Description</th>
+                  <th>IP Address</th>
+                </tr>
+              </thead>
+              <tbody id="auditTbody">
+                <tr><td colspan="6" style="text-align: center;">Loading audit trail...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <div id="pageInfo">Showing page 1</div>
+            <div class="pagination-controls">
+              <button class="btn btn-outline btn-sm" id="prevBtn" onclick="changePage(-1)">Previous</button>
+              <button class="btn btn-outline btn-sm" id="nextBtn" onclick="changePage(1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('Audit Logs');
+
+    let curPage = 1;
+    let totPages = 1;
+
+    async function loadAudits(page = 1) {
+      curPage = page;
+      try {
+        const res = await API.get(`/admin/audit-logs?page=${page}&limit=20`);
+        const tbody = document.getElementById('auditTbody');
+
+        if (res.success) {
+          const logs = res.data;
+          totPages = res.pagination ? res.pagination.totalPages : 1;
+          document.getElementById('pageInfo').textContent = `Page ${curPage} of ${totPages || 1}`;
+          document.getElementById('prevBtn').disabled = curPage <= 1;
+          document.getElementById('nextBtn').disabled = curPage >= totPages;
+
+          if (logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No audit logs recorded yet.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          logs.forEach(a => {
+            const dateStr = new Date(a.timestamp).toLocaleString('en-PH');
+            const actorStr = a.actor ? `${a.actor.username} (${a.actor.role})` : 'System';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${dateStr}</td>
+              <td><span class="badge badge-info">${a.action}</span></td>
+              <td><code>${a.targetType}</code></td>
+              <td><strong>${actorStr}</strong></td>
+              <td>${a.description}</td>
+              <td><small>${a.ipAddress}</small></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function changePage(delta) {
+      const next = curPage + delta;
+      if (next >= 1 && next <= totPages) {
+        loadAudits(next);
+      }
+    }
+
+    loadAudits(1);
+  </script>
+</body>
+</html>

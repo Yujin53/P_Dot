@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Fleet Management — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html" class="active"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Registered Fleet Vehicles</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Plate / Franchise</th>
+                  <th>Driver Owner</th>
+                  <th>Type</th>
+                  <th>Make & Model</th>
+                  <th>Color & Year</th>
+                  <th>Capacity</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="fleetTbody">
+                <tr><td colspan="7" style="text-align: center;">Loading vehicles...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('Fleet Vehicles');
+
+    async function loadVehicles() {
+      try {
+        const res = await API.get('/admin/vehicles');
+        const tbody = document.getElementById('fleetTbody');
+
+        if (res.success) {
+          const list = res.data;
+          if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No registered vehicles.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          list.forEach(v => {
+            const drvName = v.driver && v.driver.user ? `${v.driver.user.firstName} ${v.driver.user.lastName}` : 'Unassigned';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><span class="vehicle-plate-pill">${v.plateNumber}</span></td>
+              <td>${drvName}</td>
+              <td style="text-transform: capitalize;">${v.vehicleType}</td>
+              <td>${v.make} ${v.model}</td>
+              <td>${v.color} (${v.year})</td>
+              <td>${v.capacity} pax</td>
+              <td><span class="badge ${v.verificationStatus === 'approved' ? 'badge-success' : 'badge-warning'}">${v.verificationStatus.toUpperCase()}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadVehicles();
+  </script>
+</body>
+</html>

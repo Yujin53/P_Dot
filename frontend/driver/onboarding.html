@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Onboarding — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <style>
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 10%;
+      right: 10%;
+      height: 4px;
+      background: var(--border-color);
+      z-index: 1;
+    }
+    .step-item {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      flex: 1;
+    }
+    .step-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 3px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.5rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .step-item.active .step-icon {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .step-item.done .step-icon {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+    .step-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .guide-card {
+      background: #F8FAFC;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Applicant</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/onboarding.html" class="active"><span>🚀</span> Onboarding Guide</a></li>
+        <li><a href="/driver/verification.html"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/available-rides.html"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html"><span>💰</span> Earnings</a></li>
+        <li><a href="/driver/profile.html"><span>👤</span> Driver Profile</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Driver Onboarding & Verification</h1>
+        <div class="topbar-actions">
+          <a href="/driver/verification.html" class="btn btn-primary btn-sm">Upload Documents</a>
+        </div>
+      </header>
+
+      <div class="dashboard-content" style="max-width: 900px;">
+        <!-- Stepper Progress -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.15rem; margin-bottom: 1.25rem;">Activation Steps</h2>
+          <div class="stepper">
+            <div class="step-item done" id="step1">
+              <div class="step-icon">1</div>
+              <div class="step-title">Account Registered</div>
+            </div>
+            <div class="step-item" id="step2">
+              <div class="step-icon">2</div>
+              <div class="step-title">Vehicle Registered</div>
+            </div>
+            <div class="step-item" id="step3">
+              <div class="step-icon">3</div>
+              <div class="step-title">Docs Uploaded</div>
+            </div>
+            <div class="step-item" id="step4">
+              <div class="step-icon">4</div>
+              <div class="step-title">Admin Approval</div>
+            </div>
+          </div>
+          <div id="statusNotice" class="alert alert-info">
+            Loading your onboarding status...
+          </div>
+        </div>
+
+        <!-- Onboarding Checklist -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Requirements Checklist</h2>
+          
+          <div class="guide-card">
+            <div>
+              <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">1. Vehicle Details & Registration</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Add your Tricycle, Sedan, Van, or Motorcycle with plate number and official registration.</p>
+            </div>
+            <a href="/driver/vehicle.html" class="btn btn-outline btn-sm">Manage Vehicle</a>
+          </div>
+
+          <div class="guide-card">
+            <div>
+              <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">2. Driver's License & Government ID</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Upload valid Professional or Non-Professional Driver's License and Tuguegarao local ID.</p>
+            </div>
+            <a href="/driver/verification.html" class="btn btn-outline btn-sm">Upload Documents</a>
+          </div>
+
+          <div class="guide-card">
+            <div>
+              <h3 style="font-size: 1rem; margin-bottom: 0.25rem;">3. Barangay & Emergency Contact Info</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Set your home barangay in Tuguegarao City and emergency contact number.</p>
+            </div>
+            <a href="/driver/profile.html" class="btn btn-outline btn-sm">Update Profile</a>
+          </div>
+        </div>
+
+        <!-- Local Transport Policy Info -->
+        <div class="card">
+          <h2 style="font-size: 1.1rem; margin-bottom: 0.75rem;">Local Transport Prototype Policy</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+            P_Dot connects local drivers in Tuguegarao City (Centro, Carig, Caggay, Buntun, Capatan, Pengue-Ruyu, San Gabriel, Ugac, and surrounding barangays).
+            In compliance with local guidelines, drivers must possess valid Philippine driver's licenses and verified vehicle registrations. Once reviewed by our operations team, you will receive an in-app notification enabling you to toggle your status <strong>ONLINE</strong> to receive ride requests.
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/driver.js"></script>
+  <script>
+    Auth.checkAuth(['driver']);
+
+    async function checkStatus() {
+      try {
+        const res = await DriverService.getVerificationStatus();
+        if (res.success) {
+          const profile = res.data;
+          const status = profile.verificationStatus || 'pending';
+          const alert = document.getElementById('statusNotice');
+
+          const step2 = document.getElementById('step2');
+          const step3 = document.getElementById('step3');
+          const step4 = document.getElementById('step4');
+
+          // Check documents
+          const docs = profile.documents || [];
+          if (docs.length > 0) {
+            step3.classList.add('done');
+          }
+
+          if (status === 'approved') {
+            step2.classList.add('done');
+            step3.classList.add('done');
+            step4.classList.add('done');
+            alert.className = 'alert alert-success';
+            alert.innerHTML = '<strong>Account Approved!</strong> Your driver profile is active. You may now switch <strong>ONLINE</strong> on your dashboard to receive rides.';
+          } else if (status === 'rejected') {
+            alert.className = 'alert alert-error';
+            alert.innerHTML = `<strong>Application Needs Revision:</strong> ${profile.rejectionReason || 'Please review your uploaded documents or vehicle registration.'}`;
+          } else {
+            step2.classList.add('active');
+            alert.className = 'alert alert-info';
+            alert.innerHTML = '<strong>Verification in Progress:</strong> Your documents are pending administrator review. Tuguegarao admins typically review applications promptly.';
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    checkStatus();
+  </script>
+</body>
+</html>

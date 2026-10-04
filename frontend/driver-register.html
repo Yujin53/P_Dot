@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Application — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="logo-container">
+      <div class="logo-mark">P.</div>
+      <div class="logo-text">P_Dot</div>
+      <span class="logo-tag">Driver Portal</span>
+    </a>
+    <div>
+      <a href="/login.html" class="btn btn-outline btn-sm">Log In</a>
+    </div>
+  </nav>
+
+  <div class="auth-wrapper">
+    <div class="auth-card wide">
+      <div class="auth-header">
+        <h2>Apply to Drive With P_Dot</h2>
+        <p>Earn daily income serving passengers in Tuguegarao City</p>
+      </div>
+
+      <div id="alertBox" class="alert" style="display: none;"></div>
+
+      <form id="driverRegisterForm" enctype="multipart/form-data">
+        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem; color: var(--primary);">1. Personal Information</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Kanor" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Mendoza" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="username">Driver Username</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="kanormendoza" required minlength="3">
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="kanor@gmail.com" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Mobile Number (PH)</label>
+            <input type="tel" id="phone" name="phone" class="form-control" placeholder="09181234567" required>
+          </div>
+          <div class="form-group">
+            <label for="address">Tuguegarao Barangay / Address</label>
+            <input type="text" id="address" name="address" class="form-control" placeholder="Centro 02, Tuguegarao City" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="emergencyName">Emergency Contact Person</label>
+            <input type="text" id="emergencyContactName" name="emergencyContactName" class="form-control" placeholder="Maria Mendoza (Spouse)" required>
+          </div>
+          <div class="form-group">
+            <label for="emergencyPhone">Emergency Phone Number</label>
+            <input type="tel" id="emergencyContactPhone" name="emergencyContactPhone" class="form-control" placeholder="09187654321" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Account Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Min. 6 chars" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Repeat password" required minlength="6">
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">2. Driver Credentials & Verification</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="licenseReference">Driver's License No.</label>
+            <input type="text" id="licenseReference" name="licenseReference" class="form-control" placeholder="e.g. A02-14-123456" required>
+          </div>
+          <div class="form-group">
+            <label for="governmentIdReference">Gov ID Reference (UMID / Postal / PhilSys)</label>
+            <input type="text" id="governmentIdReference" name="governmentIdReference" class="form-control" placeholder="e.g. 1029-4821-99" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Upload Driver's License (Photo or PDF)</label>
+          <input type="file" id="licenseDoc" name="licenseDoc" class="form-control" accept="image/*,.pdf">
+          <div class="form-hint">Admin will verify this document before activating ride dispatch.</div>
+        </div>
+
+        <h3 style="font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">3. Primary Vehicle Details</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="vehicleType">Vehicle Type</label>
+            <select id="vehicleType" name="vehicleType" class="form-control" required>
+              <option value="tricycle">Tricycle (TUG Standard)</option>
+              <option value="motorcycle">Motorcycle</option>
+              <option value="sedan">Sedan / Hatchback</option>
+              <option value="van_mpv">Van / MPV</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="plateNumber">Plate / Franchise No.</label>
+            <input type="text" id="plateNumber" name="plateNumber" class="form-control" placeholder="e.g. TUG-1234" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="make">Make</label>
+            <input type="text" id="make" name="make" class="form-control" placeholder="e.g. Honda, Kawasaki, Toyota" required>
+          </div>
+          <div class="form-group">
+            <label for="model">Model & Year</label>
+            <input type="text" id="model" name="model" class="form-control" placeholder="e.g. TMX 125 (2023)" required>
+          </div>
+          <div class="form-group">
+            <label for="color">Body Color</label>
+            <input type="text" id="color" name="color" class="form-control" placeholder="e.g. Blue & Silver" required>
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Submit Driver Application</button>
+      </form>
+
+      <div class="auth-footer">
+        <div>Already a registered driver? <a href="/login.html">Log in here</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    document.getElementById('driverRegisterForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertBox = document.getElementById('alertBox');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const pass = document.getElementById('password').value;
+      const cpass = document.getElementById('confirmPassword').value;
+
+      if (pass !== cpass) {
+        alertBox.className = 'alert alert-error';
+        alertBox.textContent = 'Passwords do not match.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      alertBox.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting Application...';
+
+      const formData = new FormData(e.target);
+
+      try {
+        const res = await API.request('/auth/register-driver', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.success) {
+          alert('Driver application submitted successfully! Your account has been registered and is pending administrator document review.');
+          window.location.href = '/login.html?registered=1';
+        }
+      } catch (err) {
+        alertBox.className = 'alert alert-error';
+        alertBox.textContent = err.message || 'Driver registration failed.';
+        alertBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Driver Application';
+      }
+    });
+  </script>
+</body>
+</html>

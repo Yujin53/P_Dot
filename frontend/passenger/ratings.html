@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Reviews — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">User</div>
+          <div class="user-role user-role-display">Passenger</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/passenger/dashboard.html"><span>🏠</span> Dashboard</a></li>
+        <li><a href="/passenger/request-ride.html"><span>📍</span> Request a Ride</a></li>
+        <li><a href="/passenger/active-ride.html"><span>⚡</span> Active Ride</a></li>
+        <li><a href="/passenger/ride-history.html"><span>📜</span> Ride History</a></li>
+        <li><a href="/passenger/saved-places.html"><span>⭐</span> Saved Places</a></li>
+        <li><a href="/passenger/ratings.html" class="active"><span>★</span> Reviews & Ratings</a></li>
+        <li><a href="/passenger/profile.html"><span>👤</span> Profile Settings</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">My Submitted Reviews</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div id="ratingsList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/passenger/dashboard.html" class="mobile-nav-item"><span class="icon">🏠</span>Home</a>
+    <a href="/passenger/request-ride.html" class="mobile-nav-item"><span class="icon">📍</span>Book</a>
+    <a href="/passenger/active-ride.html" class="mobile-nav-item"><span class="icon">⚡</span>Active</a>
+    <a href="/passenger/ride-history.html" class="mobile-nav-item"><span class="icon">📜</span>History</a>
+    <a href="/passenger/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['passenger']);
+    Nav.renderHeader('My Ratings');
+
+    async function loadRatings() {
+      try {
+        const res = await API.get('/ratings/my');
+        const list = document.getElementById('ratingsList');
+
+        if (res.success) {
+          if (res.data.length === 0) {
+            list.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">You have not rated any completed rides yet. Once a trip completes, you can submit your 5-star rating!</div>';
+            return;
+          }
+
+          list.innerHTML = '';
+          res.data.forEach(item => {
+            const stars = '⭐'.repeat(item.rating);
+            const dateStr = new Date(item.createdAt).toLocaleDateString('en-PH');
+            const driverName = item.driver && item.driver.user ? `${item.driver.user.firstName} ${item.driver.user.lastName}` : 'Local Driver';
+
+            const div = document.createElement('div');
+            div.style.cssText = 'border-bottom: 1px solid var(--border-color); padding: 1rem 0;';
+            div.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <div><strong>${driverName}</strong> <span style="font-size: 0.9rem; margin-left: 0.5rem;">${stars} (${item.rating}/5)</span></div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${dateStr}</div>
+              </div>
+              <p style="font-size: 0.9rem; color: var(--text-muted); font-style: italic;">"${item.comment || 'No written comment'}"</p>
+            `;
+            list.appendChild(div);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadRatings();
+  </script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Verification & Applications — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html" class="active"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/notifications.html"><span>🔔</span> Notifications & Broadcasts</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+        <li><a href="/admin/settings.html"><span>⚙️</span> Platform Settings</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Driver Verification & Document Review</h1>
+        <div class="topbar-actions">
+          <select id="verifFilter" class="form-control" style="width: 180px;" onchange="loadDrivers(1)">
+            <option value="">All Verification</option>
+            <option value="pending">Pending</option>
+            <option value="under_review">Under Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Driver Name</th>
+                  <th>Contact</th>
+                  <th>License Ref</th>
+                  <th>Vehicle</th>
+                  <th>Documents</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="driversTbody">
+                <tr><td colspan="7" style="text-align: center;">Loading driver applications...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <div id="pageInfo">Showing page 1</div>
+            <div class="pagination-controls">
+              <button class="btn btn-outline btn-sm" id="prevBtn" onclick="changePage(-1)">Previous</button>
+              <button class="btn btn-outline btn-sm" id="nextBtn" onclick="changePage(1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Document Review Modal -->
+  <div class="modal-backdrop" id="docModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Review Driver Credentials</h3>
+        <button class="modal-close" onclick="closeDocModal()">&times;</button>
+      </div>
+      <div id="modalBodyContent">
+        <!-- Injected -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('Driver Verification');
+
+    let curPage = 1;
+    let totPages = 1;
+    let driversData = [];
+
+    async function loadDrivers(page = 1) {
+      curPage = page;
+      const status = document.getElementById('verifFilter').value;
+      let url = `/admin/drivers?page=${page}&limit=15`;
+      if (status) url += `&verificationStatus=${status}`;
+
+      try {
+        const res = await API.get(url);
+        const tbody = document.getElementById('driversTbody');
+
+        if (res.success) {
+          driversData = res.data;
+          totPages = res.pagination ? res.pagination.totalPages : 1;
+          document.getElementById('pageInfo').textContent = `Page ${curPage} of ${totPages || 1}`;
+          document.getElementById('prevBtn').disabled = curPage <= 1;
+          document.getElementById('nextBtn').disabled = curPage >= totPages;
+
+          if (driversData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No drivers found matching criteria.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          driversData.forEach(d => {
+            const u = d.user || {};
+            const v = d.vehicle;
+            const vehStr = v ? `${v.plateNumber} (${v.vehicleType})` : 'No vehicle';
+
+            let badge = 'badge-warning';
+            if (d.verificationStatus === 'approved') badge = 'badge-success';
+            else if (d.verificationStatus === 'rejected' || d.verificationStatus === 'suspended') badge = 'badge-danger';
+
+            const docsCount = d.documents ? d.documents.length : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>
+                <strong>${u.firstName || ''} ${u.lastName || ''}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">@${u.username || ''}</div>
+              </td>
+              <td>
+                <div>${u.phone || 'N/A'}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${u.email || ''}</div>
+              </td>
+              <td><code>${d.licenseReference}</code></td>
+              <td>${vehStr}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="viewDocs('${d._id}')">${docsCount} File(s)</button>
+              </td>
+              <td><span class="badge ${badge}">${d.verificationStatus.toUpperCase()}</span></td>
+              <td>
+                <div style="display: flex; gap: 0.35rem;">
+                  ${d.verificationStatus !== 'approved' ? `<button class="btn btn-primary btn-sm" onclick="approveDriver('${d._id}')">Approve</button>` : ''}
+                  ${d.verificationStatus !== 'rejected' && d.verificationStatus !== 'approved' ? `<button class="btn btn-danger btn-sm" onclick="rejectDriver('${d._id}')">Reject</button>` : ''}
+                  ${d.verificationStatus === 'approved' ? `<button class="btn btn-outline btn-danger btn-sm" onclick="suspendDriver('${d._id}')">Suspend</button>` : ''}
+                  ${d.verificationStatus === 'suspended' ? `<button class="btn btn-primary btn-sm" onclick="reactivateDriver('${d._id}')">Reactivate</button>` : ''}
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function viewDocs(driverId) {
+      const d = driversData.find(item => item._id === driverId);
+      if (!d) return;
+
+      const content = document.getElementById('modalBodyContent');
+      let docsHtml = '';
+      if (!d.documents || d.documents.length === 0) {
+        docsHtml = '<p style="color: var(--text-muted);">No uploaded documents for this driver.</p>';
+      } else {
+        d.documents.forEach(doc => {
+          docsHtml += `
+            <div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>${doc.title}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${doc.docType.replace(/_/g, ' ')}</div>
+              </div>
+              <a href="${doc.filePath}" target="_blank" class="btn btn-outline btn-sm">Inspect File &rarr;</a>
+            </div>
+          `;
+        });
+      }
+
+      content.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <h4>${d.user ? d.user.firstName + ' ' + d.user.lastName : 'Driver'}</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">License: ${d.licenseReference} • Address: ${d.address}</p>
+        </div>
+        ${docsHtml}
+      `;
+
+      document.getElementById('docModal').classList.add('active');
+    }
+
+    function closeDocModal() {
+      document.getElementById('docModal').classList.remove('active');
+    }
+
+    async function approveDriver(id) {
+      if (!confirm('Approve this driver application and activate ride-dispatch eligibility?')) return;
+      try {
+        const res = await API.put(`/admin/drivers/${id}/approve`, {});
+        if (res.success) {
+          alert('Driver successfully approved!');
+          loadDrivers(curPage);
+        }
+      } catch (e) {
+        alert(e.message || 'Approval failed');
+      }
+    }
+
+    async function rejectDriver(id) {
+      const reason = prompt('Please specify rejection reason:');
+      if (!reason) return;
+      try {
+        const res = await API.put(`/admin/drivers/${id}/reject`, { rejectionReason: reason });
+        if (res.success) {
+          alert('Driver application rejected.');
+          loadDrivers(curPage);
+        }
+      } catch (e) {
+        alert(e.message || 'Rejection failed');
+      }
+    }
+
+    async function suspendDriver(id) {
+      const reason = prompt('Reason for suspending driver:');
+      if (!reason) return;
+      try {
+        const res = await API.put(`/admin/drivers/${id}/suspend`, { action: 'suspend', reason });
+        if (res.success) {
+          alert('Driver suspended.');
+          loadDrivers(curPage);
+        }
+      } catch (e) {
+        alert(e.message || 'Suspension failed');
+      }
+    }
+
+    async function reactivateDriver(id) {
+      if (!confirm('Reactivate this driver?')) return;
+      try {
+        const res = await API.put(`/admin/drivers/${id}/suspend`, { action: 'reactivate' });
+        if (res.success) {
+          alert('Driver reactivated.');
+          loadDrivers(curPage);
+        }
+      } catch (e) {
+        alert(e.message || 'Reactivation failed');
+      }
+    }
+
+    function changePage(delta) {
+      const next = curPage + delta;
+      if (next >= 1 && next <= totPages) {
+        loadDrivers(next);
+      }
+    }
+
+    loadDrivers(1);
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Trip History — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Verified Driver</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/available-rides.html"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html" class="active"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html"><span>💰</span> Earnings Summary</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/verification.html"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/profile.html"><span>👤</span> Driver Profile</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Driver Trip History</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Date & Time</th>
+                  <th>Passenger</th>
+                  <th>Pickup & Destination</th>
+                  <th>Fare</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="driverHistoryTbody">
+                <tr><td colspan="6" style="text-align: center;">Loading history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/driver/dashboard.html" class="mobile-nav-item"><span class="icon">📊</span>Home</a>
+    <a href="/driver/available-rides.html" class="mobile-nav-item"><span class="icon">📍</span>Requests</a>
+    <a href="/driver/active-trip.html" class="mobile-nav-item"><span class="icon">⚡</span>Trip</a>
+    <a href="/driver/earnings.html" class="mobile-nav-item"><span class="icon">💰</span>Earnings</a>
+    <a href="/driver/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['driver']);
+    Nav.renderHeader('Trip History');
+
+    async function loadDriverHistory() {
+      try {
+        const res = await API.get('/rides');
+        const tbody = document.getElementById('driverHistoryTbody');
+
+        if (res.success) {
+          const rides = res.data;
+          if (rides.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No trips found.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          rides.forEach(r => {
+            const dateStr = new Date(r.requestedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            let badge = 'badge-neutral';
+            if (r.status === 'completed') badge = 'badge-success';
+            else if (r.status.startsWith('cancelled')) badge = 'badge-danger';
+            else badge = 'badge-warning';
+
+            const passName = r.passenger ? `${r.passenger.firstName} ${r.passenger.lastName}` : 'Passenger';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><code>#${r._id.toString().slice(-6).toUpperCase()}</code></td>
+              <td>${dateStr}</td>
+              <td>${passName}</td>
+              <td>
+                <div style="font-size: 0.85rem;"><strong>From:</strong> ${r.pickup.address}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);"><strong>To:</strong> ${r.destination.address}</div>
+              </td>
+              <td><strong>PHP ${r.finalFare || r.estimatedFare}</strong></td>
+              <td><span class="badge ${badge}">${r.status.replace(/_/g, ' ')}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadDriverHistory();
+  </script>
+</body>
+</html>

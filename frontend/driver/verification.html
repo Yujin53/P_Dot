@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Verification & Documents — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Verified Driver</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/onboarding.html"><span>🚀</span> Onboarding Guide</a></li>
+        <li><a href="/driver/available-rides.html"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html"><span>💰</span> Earnings Summary</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/verification.html" class="active"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/profile.html"><span>👤</span> Driver Profile</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Driver Verification Center</h1>
+      </header>
+
+      <div class="dashboard-content" style="max-width: 850px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Verification State</div>
+            <span class="badge" id="driverStatusBadge">PENDING</span>
+          </div>
+
+          <div id="rejectionAlert" class="alert alert-error" style="display: none;">
+            <strong>Application Note:</strong> <span id="rejectionText"></span>
+          </div>
+
+          <div style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem;">Submitted Credentials & Files</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Document</th>
+                    <th>Type</th>
+                    <th>Date Uploaded</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="docsTableBody">
+                  <tr><td colspan="4" style="text-align: center;">Loading documents...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Upload new / replacement doc -->
+          <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.5rem;">
+            <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--primary);">Upload Supplemental Document</h4>
+            <form id="uploadDocForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Document Type</label>
+                  <select id="docType" class="form-control" required>
+                    <option value="driver_license">Driver's License</option>
+                    <option value="government_id">Government ID</option>
+                    <option value="nbi_or_police_clearance">Police / NBI / Barangay Clearance</option>
+                    <option value="vehicle_orcr">Vehicle OR/CR or Franchise</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Document Title</label>
+                  <input type="text" id="docTitle" class="form-control" placeholder="e.g. 2026 Barangay Clearance" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Select File (Image or PDF)</label>
+                <input type="file" id="docFile" class="form-control" accept="image/*,.pdf" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Upload File for Review</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/driver/dashboard.html" class="mobile-nav-item"><span class="icon">📊</span>Home</a>
+    <a href="/driver/available-rides.html" class="mobile-nav-item"><span class="icon">📍</span>Requests</a>
+    <a href="/driver/active-trip.html" class="mobile-nav-item"><span class="icon">⚡</span>Trip</a>
+    <a href="/driver/earnings.html" class="mobile-nav-item"><span class="icon">💰</span>Earnings</a>
+    <a href="/driver/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['driver']);
+    Nav.renderHeader('Document Status');
+
+    async function loadVerification() {
+      try {
+        const res = await API.get('/drivers/verification-status');
+        if (res.success) {
+          const d = res.data;
+          const badge = document.getElementById('driverStatusBadge');
+          badge.textContent = d.verificationStatus.toUpperCase();
+
+          if (d.verificationStatus === 'approved') badge.className = 'badge badge-success';
+          else if (d.verificationStatus === 'rejected') {
+            badge.className = 'badge badge-danger';
+            document.getElementById('rejectionAlert').style.display = 'block';
+            document.getElementById('rejectionText').textContent = d.rejectionReason || 'Please upload valid documents.';
+          } else {
+            badge.className = 'badge badge-warning';
+          }
+
+          const tbody = document.getElementById('docsTableBody');
+          if (!d.documents || d.documents.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 1.5rem;">No documents uploaded.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          d.documents.forEach(doc => {
+            const dateStr = new Date(doc.uploadedAt).toLocaleDateString('en-PH');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${doc.title}</strong></td>
+              <td style="text-transform: capitalize;">${doc.docType.replace(/_/g, ' ')}</td>
+              <td>${dateStr}</td>
+              <td>
+                <span class="badge ${doc.isVerified ? 'badge-success' : 'badge-warning'}">
+                  ${doc.isVerified ? 'VERIFIED' : 'UNDER REVIEW'}
+                </span>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('uploadDocForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('docFile');
+      if (!fileInput.files || fileInput.files.length === 0) return alert('Select a file');
+
+      const formData = new FormData();
+      formData.append('document', fileInput.files[0]);
+      formData.append('docType', document.getElementById('docType').value);
+      formData.append('title', document.getElementById('docTitle').value);
+
+      try {
+        const res = await API.request('/drivers/documents', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.success) {
+          alert('Document submitted for administrative review!');
+          e.target.reset();
+          loadVerification();
+        }
+      } catch (err) {
+        alert(err.message || 'Upload failed');
+      }
+    });
+
+    loadVerification();
+  </script>
+</body>
+</html>

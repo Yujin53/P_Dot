@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Accounts Management — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html" class="active"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Passenger & Driver Accounts</h1>
+        <div class="topbar-actions">
+          <input type="text" id="userSearch" class="form-control" placeholder="Search name/email/phone..." style="width: 240px;" oninput="debounceSearch()">
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <select id="roleFilter" class="form-control" style="width: 180px;" onchange="loadUsers(1)">
+              <option value="">All Roles</option>
+              <option value="passenger">Passenger</option>
+              <option value="driver">Driver</option>
+              <option value="admin">Admin</option>
+              <option value="superadmin">SuperAdmin</option>
+            </select>
+            <select id="statusFilter" class="form-control" style="width: 180px;" onchange="loadUsers(1)">
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+              <option value="disabled">Disabled</option>
+            </select>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Registered</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody">
+                <tr><td colspan="7" style="text-align: center;">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <div id="pageInfo">Showing page 1</div>
+            <div class="pagination-controls">
+              <button class="btn btn-outline btn-sm" id="prevBtn" onclick="changePage(-1)">Previous</button>
+              <button class="btn btn-outline btn-sm" id="nextBtn" onclick="changePage(1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('User Management');
+
+    let curPage = 1;
+    let totPages = 1;
+    let searchTimeout = null;
+
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        loadUsers(1);
+      }, 300);
+    }
+
+    async function loadUsers(page = 1) {
+      curPage = page;
+      const role = document.getElementById('roleFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      const search = document.getElementById('userSearch').value.trim();
+
+      let url = `/admin/users?page=${page}&limit=15`;
+      if (role) url += `&role=${role}`;
+      if (status) url += `&accountStatus=${status}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+
+      try {
+        const res = await API.get(url);
+        const tbody = document.getElementById('usersTbody');
+
+        if (res.success) {
+          const users = res.data;
+          totPages = res.pagination ? res.pagination.totalPages : 1;
+          document.getElementById('pageInfo').textContent = `Page ${curPage} of ${totPages || 1}`;
+          document.getElementById('prevBtn').disabled = curPage <= 1;
+          document.getElementById('nextBtn').disabled = curPage >= totPages;
+
+          if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No user accounts found.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          users.forEach(u => {
+            let badge = 'badge-success';
+            if (u.accountStatus === 'suspended') badge = 'badge-warning';
+            else if (u.accountStatus === 'disabled') badge = 'badge-danger';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>
+                <strong>${u.firstName} ${u.lastName}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">@${u.username}</div>
+              </td>
+              <td><span class="badge badge-info" style="text-transform: uppercase;">${u.role}</span></td>
+              <td>${u.email}</td>
+              <td>${u.phone}</td>
+              <td><span class="badge ${badge}">${u.accountStatus.toUpperCase()}</span></td>
+              <td>${new Date(u.createdAt).toLocaleDateString('en-PH')}</td>
+              <td>
+                <div style="display: flex; gap: 0.35rem;">
+                  ${u.accountStatus === 'active' ? 
+                    `<button class="btn btn-outline btn-danger btn-sm" onclick="setStatus('${u._id}', 'suspended')">Suspend</button>` : 
+                    `<button class="btn btn-outline btn-primary btn-sm" onclick="setStatus('${u._id}', 'active')">Activate</button>`
+                  }
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function setStatus(userId, status) {
+      if (!confirm(`Change account status to ${status.toUpperCase()}?`)) return;
+      try {
+        const res = await API.put(`/admin/users/${userId}/status`, { status });
+        if (res.success) {
+          alert('User status updated');
+          loadUsers(curPage);
+        }
+      } catch (e) {
+        alert(e.message || 'Action failed');
+      }
+    }
+
+    function changePage(delta) {
+      const next = curPage + delta;
+      if (next >= 1 && next <= totPages) {
+        loadUsers(next);
+      }
+    }
+
+    loadUsers(1);
+  </script>
+</body>
+</html>

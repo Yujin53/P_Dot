@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request a Ride — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/ride.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+        </a>
+      </div>
+
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Passenger</div>
+          <div class="user-role user-role-display">Passenger</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li><a href="/passenger/dashboard.html"><span>🏠</span> Dashboard</a></li>
+        <li><a href="/passenger/request-ride.html" class="active"><span>📍</span> Request a Ride</a></li>
+        <li><a href="/passenger/active-ride.html"><span>⚡</span> Active Ride</a></li>
+        <li><a href="/passenger/ride-history.html"><span>📜</span> Ride History</a></li>
+        <li><a href="/passenger/saved-places.html"><span>⭐</span> Saved Places</a></li>
+        <li><a href="/passenger/ratings.html"><span>★</span> Reviews & Ratings</a></li>
+        <li><a href="/passenger/profile.html"><span>👤</span> Profile Settings</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Book a Local Ride</h1>
+        <div class="topbar-actions">
+          <button class="notif-bell-btn" id="notifBell">🔔 <span class="notif-badge" id="notifBadge" style="display: none;">0</span></button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <div id="alertBox" class="alert" style="display: none;"></div>
+
+        <div class="ride-booking-grid">
+          <!-- Request Form -->
+          <div class="card">
+            <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem; color: var(--primary);">Trip Details</h2>
+
+            <form id="rideBookingForm">
+              <!-- Pickup -->
+              <div class="form-group">
+                <label for="pickupInput">1. Pickup Point (Tuguegarao)</label>
+                <div class="input-with-icon">
+                  <span class="icon">📍</span>
+                  <input type="text" id="pickupInput" class="form-control" placeholder="Type address or select from landmark list..." required autocomplete="off">
+                </div>
+                <div style="margin-top: 0.35rem; display: flex; gap: 0.35rem; flex-wrap: wrap;" id="quickPickupSuggestions">
+                  <!-- Quick chips injected via JS -->
+                </div>
+              </div>
+
+              <!-- Destination -->
+              <div class="form-group">
+                <label for="destinationInput">2. Destination</label>
+                <div class="input-with-icon">
+                  <span class="icon">🏁</span>
+                  <input type="text" id="destinationInput" class="form-control" placeholder="Type destination or landmark..." required autocomplete="off">
+                </div>
+                <div style="margin-top: 0.35rem; display: flex; gap: 0.35rem; flex-wrap: wrap;" id="quickDropSuggestions">
+                  <!-- Quick chips injected via JS -->
+                </div>
+              </div>
+
+              <!-- Transport Service Type -->
+              <div class="form-group">
+                <label>3. Select Service Type</label>
+                <div class="service-type-selector">
+                  <div class="service-option active" data-type="tricycle">
+                    <span class="icon">🛺</span>
+                    <span class="name">Tricycle</span>
+                  </div>
+                  <div class="service-option" data-type="motorcycle">
+                    <span class="icon">🛵</span>
+                    <span class="name">Moto</span>
+                  </div>
+                  <div class="service-option" data-type="sedan">
+                    <span class="icon">🚗</span>
+                    <span class="name">Sedan</span>
+                  </div>
+                  <div class="service-option" data-type="van_mpv">
+                    <span class="icon">🚐</span>
+                    <span class="name">Van</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="passengerCount">Passengers</label>
+                  <select id="passengerCount" class="form-control">
+                    <option value="1">1 Passenger</option>
+                    <option value="2">2 Passengers</option>
+                    <option value="3">3 Passengers</option>
+                    <option value="4">4 Passengers</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="paymentMethod">Payment Preference</label>
+                  <select id="paymentMethod" class="form-control">
+                    <option value="cash">Cash (Upon Drop-off)</option>
+                    <option value="recorded_digital_payment">Recorded Digital / GCash</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="passengerNotes">Notes for Driver (Optional)</label>
+                <input type="text" id="passengerNotes" class="form-control" placeholder="e.g. Near SPUP gate, waiting beside bakery">
+              </div>
+
+              <!-- Dynamic Fare Breakdown Card -->
+              <div class="fare-breakdown-box" id="fareBox" style="display: none;">
+                <div style="font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Official Fare Calculation</div>
+                <div class="fare-row">
+                  <span>Base Fare:</span>
+                  <span id="fBase">PHP 15</span>
+                </div>
+                <div class="fare-row">
+                  <span>Distance (<span id="fDist">1.5</span> km):</span>
+                  <span id="fDistCharge">PHP 5</span>
+                </div>
+                <div class="fare-row">
+                  <span>Estimated Time (<span id="fTime">5</span> mins):</span>
+                  <span id="fTimeCharge">PHP 5</span>
+                </div>
+                <div class="fare-row">
+                  <span>Booking Fee:</span>
+                  <span id="fBooking">PHP 5</span>
+                </div>
+                <div class="fare-row" id="peakRow" style="display: none; color: var(--accent);">
+                  <span>Peak Adjustment:</span>
+                  <span id="fPeak">+ PHP 5</span>
+                </div>
+                <div class="fare-row total">
+                  <span>Estimated Total:</span>
+                  <span id="fTotal">PHP 30</span>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 1.25rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+                  <input type="checkbox" id="confirmCheckbox" required>
+                  <span>I confirm this ride booking within Tuguegarao service area.</span>
+                </label>
+              </div>
+
+              <button type="submit" id="bookBtn" class="btn btn-primary btn-lg" style="width: 100%;">Confirm & Request Ride</button>
+            </form>
+          </div>
+
+          <!-- Route Preview & Map Placeholder -->
+          <div>
+            <div class="card" style="padding: 1rem;">
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem;">Service Route Preview</h3>
+              <div class="map-placeholder">
+                <div class="map-overlay-badge">Tuguegarao City Local Route Simulation</div>
+                <div class="map-route-visual">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="route-dot pickup"></div>
+                    <span id="mapPickupText" style="font-size: 0.85rem; font-weight: 600;">Pickup</span>
+                  </div>
+                  <div class="route-line"></div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="route-dot destination"></div>
+                    <span id="mapDropText" style="font-size: 0.85rem; font-weight: 600;">Destination</span>
+                  </div>
+                </div>
+                <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); text-align: center; max-width: 80%;">
+                  🗺️ Map visualization ready for OpenStreetMap / Google Maps integration. Coordinates mapped to Tuguegarao local landmarks.
+                </div>
+              </div>
+            </div>
+
+            <!-- Tuguegarao Popular Points Quick-Click -->
+            <div class="card">
+              <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Common Tuguegarao Drop-off Points</h4>
+              <div id="landmarksPillContainer" class="landmarks-list">
+                <!-- Injected via API -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/passenger/dashboard.html" class="mobile-nav-item"><span class="icon">🏠</span>Home</a>
+    <a href="/passenger/request-ride.html" class="mobile-nav-item active"><span class="icon">📍</span>Book</a>
+    <a href="/passenger/active-ride.html" class="mobile-nav-item"><span class="icon">⚡</span>Active</a>
+    <a href="/passenger/ride-history.html" class="mobile-nav-item"><span class="icon">📜</span>History</a>
+    <a href="/passenger/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    if (!Auth.checkAuth(['passenger'])) {
+      // redirected
+    }
+
+    let selectedServiceType = 'tricycle';
+    let availableLocations = [];
+    let pickupLocationData = { address: '', barangay: 'Centro', latitude: 17.6132, longitude: 121.7270 };
+    let dropLocationData = { address: '', barangay: 'Carig Sur', latitude: 17.6534, longitude: 121.7521 };
+
+    // Service selector handling
+    document.querySelectorAll('.service-option').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.service-option').forEach(o => o.classList.remove('active'));
+        el.classList.add('active');
+        selectedServiceType = el.dataset.type;
+        triggerFareRecalculation();
+      });
+    });
+
+    async function initPage() {
+      Nav.renderHeader('Request a Ride');
+      try {
+        const res = await API.get('/locations');
+        if (res.success) {
+          availableLocations = res.data;
+          renderLandmarks();
+        }
+
+        // Check if there is already an active ride
+        const activeRes = await API.get('/rides?status=requested,searching,accepted,driver_arriving,driver_arrived,trip_started');
+        if (activeRes.success && activeRes.data.length > 0) {
+          if (confirm('You currently have an active ride booking! Would you like to view it now?')) {
+            window.location.href = '/passenger/active-ride.html';
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderLandmarks() {
+      const container = document.getElementById('landmarksPillContainer');
+      const pickupChips = document.getElementById('quickPickupSuggestions');
+      const dropChips = document.getElementById('quickDropSuggestions');
+
+      container.innerHTML = '';
+      availableLocations.slice(0, 8).forEach(loc => {
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = 'btn btn-outline btn-sm';
+        pill.textContent = loc.name;
+        pill.onclick = () => {
+          document.getElementById('destinationInput').value = `${loc.name}, ${loc.address}`;
+          dropLocationData = {
+            label: loc.name,
+            address: loc.address,
+            barangay: loc.barangay,
+            latitude: loc.latitude,
+            longitude: loc.longitude
+          };
+          document.getElementById('mapDropText').textContent = loc.name;
+          triggerFareRecalculation();
+        };
+        container.appendChild(pill);
+      });
+
+      // Quick chips for pickup
+      availableLocations.slice(0, 3).forEach(loc => {
+        const chip = document.createElement('span');
+        chip.style.cssText = 'background:#E2E8F0; padding:2px 8px; border-radius:12px; font-size:0.75rem; cursor:pointer;';
+        chip.textContent = loc.name;
+        chip.onclick = () => {
+          document.getElementById('pickupInput').value = `${loc.name}, ${loc.address}`;
+          pickupLocationData = {
+            label: loc.name,
+            address: loc.address,
+            barangay: loc.barangay,
+            latitude: loc.latitude,
+            longitude: loc.longitude
+          };
+          document.getElementById('mapPickupText').textContent = loc.name;
+          triggerFareRecalculation();
+        };
+        pickupChips.appendChild(chip);
+      });
+    }
+
+    async function triggerFareRecalculation() {
+      const pVal = document.getElementById('pickupInput').value.trim();
+      const dVal = document.getElementById('destinationInput').value.trim();
+
+      if (!pVal || !dVal) return;
+
+      pickupLocationData.address = pVal;
+      dropLocationData.address = dVal;
+
+      try {
+        const res = await API.post('/rides/estimate', {
+          pickup: pickupLocationData,
+          destination: dropLocationData,
+          serviceType: selectedServiceType
+        });
+
+        if (res.success) {
+          const d = res.data;
+          document.getElementById('fareBox').style.display = 'block';
+          document.getElementById('fBase').textContent = `PHP ${d.fareBreakdown.baseFare}`;
+          document.getElementById('fDist').textContent = d.estimatedDistanceKm;
+          document.getElementById('fDistCharge').textContent = `PHP ${d.fareBreakdown.distanceCharge}`;
+          document.getElementById('fTime').textContent = d.estimatedDurationMin;
+          document.getElementById('fTimeCharge').textContent = `PHP ${d.fareBreakdown.timeCharge}`;
+          document.getElementById('fBooking').textContent = `PHP ${d.fareBreakdown.bookingFee}`;
+          document.getElementById('fTotal').textContent = `PHP ${d.estimatedFare}`;
+
+          if (d.fareBreakdown.isPeakActive) {
+            document.getElementById('peakRow').style.display = 'flex';
+            document.getElementById('fPeak').textContent = `+ PHP ${d.fareBreakdown.peakAdjustment}`;
+          } else {
+            document.getElementById('peakRow').style.display = 'none';
+          }
+        }
+      } catch (e) {
+        console.warn('Fare estimate error:', e);
+      }
+    }
+
+    document.getElementById('pickupInput').addEventListener('change', triggerFareRecalculation);
+    document.getElementById('destinationInput').addEventListener('change', triggerFareRecalculation);
+
+    // Form submit
+    document.getElementById('rideBookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertBox = document.getElementById('alertBox');
+      const bookBtn = document.getElementById('bookBtn');
+
+      alertBox.style.display = 'none';
+      bookBtn.disabled = true;
+      bookBtn.textContent = 'Contacting Local Drivers...';
+
+      const payload = {
+        pickup: {
+          label: document.getElementById('pickupInput').value.split(',')[0],
+          address: document.getElementById('pickupInput').value,
+          barangay: pickupLocationData.barangay || 'Centro',
+          latitude: pickupLocationData.latitude,
+          longitude: pickupLocationData.longitude
+        },
+        destination: {
+          label: document.getElementById('destinationInput').value.split(',')[0],
+          address: document.getElementById('destinationInput').value,
+          barangay: dropLocationData.barangay || 'Carig Sur',
+          latitude: dropLocationData.latitude,
+          longitude: dropLocationData.longitude
+        },
+        serviceType: selectedServiceType,
+        passengerCount: document.getElementById('passengerCount').value,
+        paymentMethod: document.getElementById('paymentMethod').value,
+        passengerNotes: document.getElementById('passengerNotes').value.trim()
+      };
+
+      try {
+        const res = await API.post('/rides', payload);
+        if (res.success) {
+          window.location.href = `/passenger/active-ride.html?id=${res.data._id}`;
+        }
+      } catch (err) {
+        alertBox.className = 'alert alert-error';
+        alertBox.textContent = err.message || 'Failed to request ride.';
+        alertBox.style.display = 'block';
+        bookBtn.disabled = false;
+        bookBtn.textContent = 'Confirm & Request Ride';
+      }
+    });
+
+    initPage();
+  </script>
+</body>
+</html>

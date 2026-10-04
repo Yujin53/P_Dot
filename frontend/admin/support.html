@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Support Tickets — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html" class="active"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Support & Incident Tickets</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Category</th>
+                  <th>Subject</th>
+                  <th>Submitted By</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="ticketsTbody">
+                <tr><td colspan="7" style="text-align: center;">Loading tickets...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Resolution Modal -->
+  <div class="modal-backdrop" id="ticketModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Resolve Support Ticket</h3>
+        <button class="modal-close" onclick="closeTicketModal()">&times;</button>
+      </div>
+      <form id="resolveForm">
+        <div style="margin-bottom: 1rem;">
+          <h4 id="tickSubject">Subject</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;" id="tickDesc">Description</p>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select id="tickStatus" class="form-control" required>
+            <option value="in_review">In Review</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Resolution Message / Response</label>
+          <textarea id="tickResolution" class="form-control" rows="3" placeholder="Enter findings and action taken..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Update & Notify User</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('Support Tickets');
+
+    let allTickets = [];
+    let activeTicketId = null;
+
+    async function loadTickets() {
+      try {
+        const res = await API.get('/support/tickets');
+        const tbody = document.getElementById('ticketsTbody');
+
+        if (res.success) {
+          allTickets = res.data;
+          if (allTickets.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No support tickets open.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          allTickets.forEach(t => {
+            const creator = t.createdBy ? `${t.createdBy.firstName || ''} (${t.createdBy.role || ''})` : 'User';
+            const dateStr = new Date(t.createdAt).toLocaleDateString('en-PH');
+
+            let badge = 'badge-warning';
+            if (t.status === 'resolved' || t.status === 'closed') badge = 'badge-success';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><code>#${t._id.toString().slice(-6).toUpperCase()}</code></td>
+              <td style="text-transform: capitalize;">${t.category.replace(/_/g, ' ')}</td>
+              <td><strong>${t.subject}</strong></td>
+              <td>${creator}</td>
+              <td>${dateStr}</td>
+              <td><span class="badge ${badge}">${t.status.toUpperCase()}</span></td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="openResolveModal('${t._id}')">Review & Reply</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openResolveModal(id) {
+      activeTicketId = id;
+      const t = allTickets.find(item => item._id === id);
+      if (!t) return;
+
+      document.getElementById('tickSubject').textContent = `[${t.category.toUpperCase()}] ${t.subject}`;
+      document.getElementById('tickDesc').textContent = t.description;
+      document.getElementById('tickStatus').value = t.status || 'in_review';
+      document.getElementById('tickResolution').value = t.resolution || '';
+
+      document.getElementById('ticketModal').classList.add('active');
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticketModal').classList.remove('active');
+    }
+
+    document.getElementById('resolveForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeTicketId) return;
+
+      try {
+        const res = await API.put(`/support/tickets/${activeTicketId}`, {
+          status: document.getElementById('tickStatus').value,
+          resolution: document.getElementById('tickResolution').value.trim()
+        });
+
+        if (res.success) {
+          alert('Ticket status updated!');
+          closeTicketModal();
+          loadTickets();
+        }
+      } catch (err) {
+        alert(err.message || 'Error updating ticket');
+      }
+    });
+
+    loadTickets();
+  </script>
+</body>
+</html>

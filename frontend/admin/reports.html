@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics & Operational Reports — P_Dot Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html" class="active"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Operational Analytics & Reports</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- 7-Day Performance -->
+          <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary);">7-Day Trip Activity</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Total Rides</th>
+                    <th>Completed</th>
+                    <th>Cancelled</th>
+                    <th>Gross Fares</th>
+                  </tr>
+                </thead>
+                <tbody id="sevendayTbody">
+                  <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Service Type Breakdown -->
+          <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary);">Service Type Popularity</h3>
+            <div id="serviceBreakdownList">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Demand Barangays -->
+        <div class="card">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary);">Top Pickup Barangays in Tuguegarao</h3>
+          <div id="topBarangaysList" class="landmarks-list">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+    Nav.renderHeader('Reports & Analytics');
+
+    async function loadReports() {
+      try {
+        const res = await API.get('/admin/reports');
+        if (res.success) {
+          const d = res.data;
+
+          // 7-day table
+          const sTbody = document.getElementById('sevendayTbody');
+          if (d.ridesLast7Days && d.ridesLast7Days.length > 0) {
+            sTbody.innerHTML = '';
+            d.ridesLast7Days.forEach(r => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><strong>${r._id}</strong></td>
+                <td>${r.totalRides}</td>
+                <td><span style="color: var(--success);">${r.completedRides}</span></td>
+                <td><span style="color: var(--danger);">${r.cancelledRides}</span></td>
+                <td><strong>PHP ${r.totalRevenue}</strong></td>
+              `;
+              sTbody.appendChild(tr);
+            });
+          } else {
+            sTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No activity recorded in last 7 days.</td></tr>';
+          }
+
+          // Service breakdown
+          const sbList = document.getElementById('serviceBreakdownList');
+          sbList.innerHTML = '';
+          if (d.serviceTypeBreakdown && d.serviceTypeBreakdown.length > 0) {
+            d.serviceTypeBreakdown.forEach(s => {
+              const div = document.createElement('div');
+              div.style.cssText = 'border-bottom: 1px solid var(--border-color); padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;';
+              div.innerHTML = `
+                <div style="text-transform: capitalize; font-weight: 700;">${s._id}</div>
+                <div>${s.count} total bookings (${s.completed} completed)</div>
+              `;
+              sbList.appendChild(div);
+            });
+          } else {
+            sbList.innerHTML = '<p style="color: var(--text-muted);">No service data yet.</p>';
+          }
+
+          // Top barangays
+          const bList = document.getElementById('topBarangaysList');
+          bList.innerHTML = '';
+          if (d.topBarangays && d.topBarangays.length > 0) {
+            d.topBarangays.forEach(b => {
+              const pill = document.createElement('span');
+              pill.className = 'landmark-pill';
+              pill.innerHTML = `<strong>${b._id || 'Centro'}</strong>: ${b.count} requests`;
+              bList.appendChild(pill);
+            });
+          } else {
+            bList.innerHTML = '<span style="color: var(--text-muted);">No barangay demand recorded yet.</span>';
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    loadReports();
+  </script>
+</body>
+</html>

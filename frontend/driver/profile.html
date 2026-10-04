@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Profile & Location — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag">Driver</span>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Driver</div>
+          <div class="user-role user-role-display">Verified Driver</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/driver/dashboard.html"><span>📊</span> Dashboard</a></li>
+        <li><a href="/driver/available-rides.html"><span>📍</span> Available Rides</a></li>
+        <li><a href="/driver/active-trip.html"><span>⚡</span> Current Trip</a></li>
+        <li><a href="/driver/trip-history.html"><span>📜</span> Trip History</a></li>
+        <li><a href="/driver/earnings.html"><span>💰</span> Earnings Summary</a></li>
+        <li><a href="/driver/vehicle.html"><span>🛺</span> My Vehicle</a></li>
+        <li><a href="/driver/verification.html"><span>📄</span> Document Status</a></li>
+        <li><a href="/driver/profile.html" class="active"><span>👤</span> Driver Profile</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Driver Profile & Location</h1>
+      </header>
+
+      <div class="dashboard-content" style="max-width: 800px;">
+        <div id="alertBox" class="alert" style="display: none;"></div>
+
+        <div class="card">
+          <h2 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--primary);">Driver Details</h2>
+          <form id="driverProfileForm">
+            <div class="form-group">
+              <label>Tuguegarao Address</label>
+              <input type="text" id="drvAddress" class="form-control" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Emergency Contact Name</label>
+                <input type="text" id="drvEmergName" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>Emergency Contact Phone</label>
+                <input type="tel" id="drvEmergPhone" class="form-control" required>
+              </div>
+            </div>
+
+            <h3 style="font-size: 1.05rem; margin-top: 1.5rem; margin-bottom: 0.75rem;">Simulated Local Location</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Set your current staging area in Tuguegarao so nearby passenger ride requests can match with you.
+            </p>
+
+            <div class="form-group">
+              <label>Current Staging Barangay</label>
+              <select id="drvBarangay" class="form-control">
+                <option value="Centro 01">Centro 01 (Downtown / Commercial)</option>
+                <option value="Centro 02">Centro 02 (Cathedral)</option>
+                <option value="Ugac Norte">Ugac Norte (SPUP area)</option>
+                <option value="Ugac Sur">Ugac Sur (USLT area)</option>
+                <option value="Carig Sur">Carig Sur (Regional Gov Center / CVMC)</option>
+                <option value="Tanza">Tanza (Robinsons Mall area)</option>
+                <option value="Buntun">Buntun (Buntun Bridge)</option>
+                <option value="Balzain East">Balzain East (Bus Terminal)</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm">Update Driver Information</button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/driver/dashboard.html" class="mobile-nav-item"><span class="icon">📊</span>Home</a>
+    <a href="/driver/available-rides.html" class="mobile-nav-item"><span class="icon">📍</span>Requests</a>
+    <a href="/driver/active-trip.html" class="mobile-nav-item"><span class="icon">⚡</span>Trip</a>
+    <a href="/driver/earnings.html" class="mobile-nav-item"><span class="icon">💰</span>Earnings</a>
+    <a href="/driver/profile.html" class="mobile-nav-item active"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['driver']);
+    Nav.renderHeader('Driver Profile');
+
+    const barangayCoordinates = {
+      'Centro 01': { lat: 17.6145, lon: 121.7285 },
+      'Centro 02': { lat: 17.6136, lon: 121.7268 },
+      'Ugac Norte': { lat: 17.6080, lon: 121.7225 },
+      'Ugac Sur': { lat: 17.6045, lon: 121.7208 },
+      'Carig Sur': { lat: 17.6534, lon: 121.7521 },
+      'Tanza': { lat: 17.6253, lon: 121.7380 },
+      'Buntun': { lat: 17.6088, lon: 121.6885 },
+      'Balzain East': { lat: 17.6200, lon: 121.7335 }
+    };
+
+    async function loadDriver() {
+      try {
+        const res = await API.get('/drivers/profile');
+        if (res.success && res.data.profile) {
+          const p = res.data.profile;
+          document.getElementById('drvAddress').value = p.address || '';
+          document.getElementById('drvEmergName').value = p.emergencyContactName || '';
+          document.getElementById('drvEmergPhone').value = p.emergencyContactPhone || '';
+          if (p.lastKnownLocation && p.lastKnownLocation.barangay) {
+            document.getElementById('drvBarangay').value = p.lastKnownLocation.barangay;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    document.getElementById('driverProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const bgy = document.getElementById('drvBarangay').value;
+      const coords = barangayCoordinates[bgy] || { lat: 17.6132, lon: 121.7270 };
+
+      try {
+        const res = await API.put('/drivers/profile', {
+          address: document.getElementById('drvAddress').value.trim(),
+          emergencyContactName: document.getElementById('drvEmergName').value.trim(),
+          emergencyContactPhone: document.getElementById('drvEmergPhone').value.trim(),
+          barangay: bgy,
+          latitude: coords.lat,
+          longitude: coords.lon
+        });
+
+        if (res.success) {
+          const alertBox = document.getElementById('alertBox');
+          alertBox.className = 'alert alert-success';
+          alertBox.textContent = 'Driver profile and location updated!';
+          alertBox.style.display = 'block';
+        }
+      } catch (err) {
+        alert(err.message || 'Error updating profile');
+      }
+    });
+
+    loadDriver();
+  </script>
+</body>
+</html>

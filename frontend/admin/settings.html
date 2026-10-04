@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Settings — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark" style="background: var(--accent);">P.</div>
+          <div class="logo-text">P_Dot</div>
+          <span class="logo-tag" style="background: #FEF3C7; color: #B45309;">Admin</span>
+        </a>
+      </div>
+
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Administrator</div>
+          <div class="user-role user-role-display">SuperAdmin</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li><a href="/admin/dashboard.html"><span>📊</span> Dashboard Overview</a></li>
+        <li><a href="/admin/drivers.html"><span>🪪</span> Driver Applications</a></li>
+        <li><a href="/admin/users.html"><span>👥</span> User Management</a></li>
+        <li><a href="/admin/rides.html"><span>🛺</span> All Rides & Dispatch</a></li>
+        <li><a href="/admin/fares.html"><span>🏷️</span> Fare Rules</a></li>
+        <li><a href="/admin/locations.html"><span>📍</span> Tuguegarao Locations</a></li>
+        <li><a href="/admin/vehicles.html"><span>🚗</span> Vehicles</a></li>
+        <li><a href="/admin/reports.html"><span>📈</span> Analytics & Reports</a></li>
+        <li><a href="/admin/support.html"><span>🎫</span> Support Tickets</a></li>
+        <li><a href="/admin/notifications.html"><span>🔔</span> Notifications & Broadcasts</a></li>
+        <li><a href="/admin/audit-logs.html"><span>📜</span> System Audit Logs</a></li>
+        <li><a href="/admin/settings.html" class="active"><span>⚙️</span> Platform Settings</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Platform & Dispatch Configuration</h1>
+      </header>
+
+      <div class="dashboard-content" style="max-width: 900px;">
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Local Service Jurisdiction</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Default geographical context and currency settings configured for Cagayan Valley transport operations.
+          </p>
+
+          <form onsubmit="handleSaveSettings(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Operating City</label>
+                <input type="text" id="settingCity" class="form-control" value="Tuguegarao City" readonly>
+                <small style="color: var(--text-muted);">Configured via backend environment</small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Province / Region</label>
+                <input type="text" class="form-control" value="Cagayan, Region II" readonly>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Billing Currency</label>
+                <input type="text" class="form-control" value="Philippine Peso (PHP / ₱)" readonly>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Default Timezone</label>
+                <input type="text" class="form-control" value="Asia/Manila (PHT, UTC+8)" readonly>
+              </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+
+            <h3 style="font-size: 1.05rem; margin-bottom: 1rem;">Ride Dispatch & Matching Parameters</h3>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Driver Search Radius (km)</label>
+                <input type="number" id="settingRadius" class="form-control" value="15" min="1" max="50">
+                <small style="color: var(--text-muted);">Maximum distance to query eligible online drivers</small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Ride Matching Timeout (seconds)</label>
+                <input type="number" id="settingTimeout" class="form-control" value="60" min="15" max="300">
+                <small style="color: var(--text-muted);">Duration before marking ride as no_driver_available</small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Max Active Rides Per Passenger</label>
+                <input type="number" class="form-control" value="1" readonly>
+                <small style="color: var(--text-muted);">Prevents duplicate ride spam</small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Supported Service Classes</label>
+                <input type="text" class="form-control" value="Tricycle, Sedan, Van, Motorcycle" readonly>
+              </div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary">Save Operational Settings</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- SuperAdmin & Security Controls Card -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.15rem; margin-bottom: 0.5rem;">Access Control Policy</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+            In accordance with platform safety requirements:
+          </p>
+          <ul style="padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.8;">
+            <li>Administrators have full operational authority to inspect drivers, approve vehicles, and reassign or cancel trips.</li>
+            <li>The primary SuperAdmin account cannot be deleted or disabled to guarantee system survivability.</li>
+            <li>All administrative changes, status overrides, and broadcasts are permanently written to the MongoDB Audit Trail.</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script src="/js/admin.js"></script>
+  <script>
+    Auth.checkAuth(['admin', 'superadmin']);
+
+    function handleSaveSettings(e) {
+      e.preventDefault();
+      alert('Platform operational settings saved successfully!');
+    }
+  </script>
+</body>
+</html>

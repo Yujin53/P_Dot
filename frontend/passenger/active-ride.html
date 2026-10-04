@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Active Ride Tracker — P_Dot Tuguegarao</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/ride.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+        </a>
+      </div>
+
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">Passenger</div>
+          <div class="user-role user-role-display">Passenger</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li><a href="/passenger/dashboard.html"><span>🏠</span> Dashboard</a></li>
+        <li><a href="/passenger/request-ride.html"><span>📍</span> Request a Ride</a></li>
+        <li><a href="/passenger/active-ride.html" class="active"><span>⚡</span> Active Ride</a></li>
+        <li><a href="/passenger/ride-history.html"><span>📜</span> Ride History</a></li>
+        <li><a href="/passenger/saved-places.html"><span>⭐</span> Saved Places</a></li>
+        <li><a href="/passenger/ratings.html"><span>★</span> Reviews & Ratings</a></li>
+        <li><a href="/passenger/profile.html"><span>👤</span> Profile Settings</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Active Ride Tracking</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-outline btn-sm" onclick="fetchActiveRide(true)">🔄 Refresh</button>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <!-- Empty State -->
+        <div id="noActiveRide" class="card" style="display: none; text-align: center; padding: 3rem 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🛺</div>
+          <h2 style="font-size: 1.4rem; margin-bottom: 0.5rem;">No Active Ride in Progress</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">You do not currently have any active ride requests in Tuguegarao.</p>
+          <a href="/passenger/request-ride.html" class="btn btn-primary">Book a Ride Now</a>
+        </div>
+
+        <!-- Active Ride Container -->
+        <div id="activeRideContainer" style="display: none;">
+          <!-- Status Banner -->
+          <div class="card" style="background: white; border-top: 4px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <span class="badge badge-warning" id="statusBadge">SEARCHING FOR DRIVERS</span>
+                <h2 style="font-size: 1.5rem; margin-top: 0.5rem;" id="statusTitle">Looking for nearby drivers...</h2>
+                <div style="font-size: 0.85rem; color: var(--text-muted);" id="statusSubtext">Notified online drivers across Tuguegarao.</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">Estimated Fare</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);" id="rideFare">PHP 0</div>
+              </div>
+            </div>
+
+            <!-- Trip Lifecycle Timeline -->
+            <div class="status-timeline">
+              <div class="timeline-step" id="step-requested">
+                <div class="step-bubble">1</div>
+                <div class="step-label">Requested</div>
+              </div>
+              <div class="timeline-step" id="step-accepted">
+                <div class="step-bubble">2</div>
+                <div class="step-label">Accepted</div>
+              </div>
+              <div class="timeline-step" id="step-arriving">
+                <div class="step-bubble">3</div>
+                <div class="step-label">Arriving</div>
+              </div>
+              <div class="timeline-step" id="step-arrived">
+                <div class="step-bubble">4</div>
+                <div class="step-label">At Pickup</div>
+              </div>
+              <div class="timeline-step" id="step-trip">
+                <div class="step-bubble">5</div>
+                <div class="step-label">On Trip</div>
+              </div>
+              <div class="timeline-step" id="step-completed">
+                <div class="step-bubble">6</div>
+                <div class="step-label">Completed</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Driver & Vehicle Details (When assigned) -->
+          <div id="driverWidget" class="driver-card-widget" style="display: none;">
+            <img src="/uploads/profiles/default-avatar.png" id="driverPhoto" class="driver-widget-avatar" alt="Driver">
+            <div class="driver-widget-details" style="flex: 1;">
+              <h4 id="driverName">Driver Kanor Mendoza</h4>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                ⭐ <span id="driverRating">4.9</span> (<span id="driverTrips">14</span> trips) • 📞 <span id="driverPhone">09181234567</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="vehicle-plate-pill" id="driverPlate">TUG-4091</span>
+                <span style="font-size: 0.85rem; font-weight: 600;" id="vehicleDesc">Honda TMX 125 (Blue)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Route & Map Simulation -->
+          <div class="card">
+            <div class="map-placeholder" style="height: 250px;">
+              <div class="map-overlay-badge">Tuguegarao Local Transit Simulation</div>
+              <div class="map-route-visual">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div class="route-dot pickup"></div>
+                  <span id="routePickup" style="font-size: 0.85rem; font-weight: 600;">Pickup</span>
+                </div>
+                <div class="route-line"></div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div class="route-dot destination"></div>
+                  <span id="routeDrop" style="font-size: 0.85rem; font-weight: 600;">Destination</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trip summary table -->
+            <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+              <div>
+                <span style="color: var(--text-muted);">Pickup:</span>
+                <div id="textPickup" style="font-weight: 600;">-</div>
+              </div>
+              <div>
+                <span style="color: var(--text-muted);">Destination:</span>
+                <div id="textDrop" style="font-weight: 600;">-</div>
+              </div>
+              <div>
+                <span style="color: var(--text-muted);">Payment Preference:</span>
+                <div id="textPayment" style="font-weight: 600; text-transform: uppercase;">Cash</div>
+              </div>
+              <div>
+                <span style="color: var(--text-muted);">Service Type:</span>
+                <div id="textService" style="font-weight: 600; text-transform: capitalize;">Tricycle</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls: Cancel, Rate or Support -->
+          <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <button type="button" class="btn btn-outline btn-danger btn-sm" id="cancelRideBtn" onclick="promptCancelRide()">Cancel Ride Request</button>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <a href="/help.html" class="btn btn-outline btn-sm">Safety Support</a>
+              <button class="btn btn-accent btn-sm" id="rateRideBtn" style="display: none;" onclick="openRatingModal()">Rate Driver</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Rating Modal -->
+  <div class="modal-backdrop" id="ratingModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Rate Your Tuguegarao Trip</h3>
+        <button class="modal-close" onclick="closeRatingModal()">&times;</button>
+      </div>
+      <form id="ratingForm">
+        <div class="form-group">
+          <label>Rating Score (1 - 5 Stars)</label>
+          <select id="ratingScore" class="form-control" required>
+            <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent local ride</option>
+            <option value="4">⭐⭐⭐⭐ 4 - Very good</option>
+            <option value="3">⭐⭐⭐ 3 - Average</option>
+            <option value="2">⭐⭐ 2 - Below expectations</option>
+            <option value="1">⭐ 1 - Poor experience</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Trip Feedback / Comments</label>
+          <textarea id="ratingComment" class="form-control" rows="3" placeholder="Tell us how the driver did..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Rating</button>
+      </form>
+    </div>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/passenger/dashboard.html" class="mobile-nav-item"><span class="icon">🏠</span>Home</a>
+    <a href="/passenger/request-ride.html" class="mobile-nav-item"><span class="icon">📍</span>Book</a>
+    <a href="/passenger/active-ride.html" class="mobile-nav-item active"><span class="icon">⚡</span>Active</a>
+    <a href="/passenger/ride-history.html" class="mobile-nav-item"><span class="icon">📜</span>History</a>
+    <a href="/passenger/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    if (!Auth.checkAuth(['passenger'])) {
+      // redirected
+    }
+
+    let activeRide = null;
+    let pollTimer = null;
+
+    Nav.renderHeader('Active Ride Tracker');
+
+    async function fetchActiveRide(manual = false) {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rideIdParam = urlParams.get('id');
+
+        let res;
+        if (rideIdParam) {
+          res = await API.get(`/rides/${rideIdParam}`);
+        } else {
+          // Look for ongoing rides
+          res = await API.get('/rides?limit=1');
+          if (res.success && res.data.length > 0) {
+            const first = res.data[0];
+            if (!['completed', 'cancelled_by_passenger', 'cancelled_by_driver', 'cancelled_by_admin', 'no_driver_available'].includes(first.status)) {
+              res.data = first;
+            } else {
+              res.data = null;
+            }
+          } else {
+            res.data = null;
+          }
+        }
+
+        if (res.success && res.data) {
+          activeRide = res.data;
+          renderActiveRide();
+        } else {
+          document.getElementById('noActiveRide').style.display = 'block';
+          document.getElementById('activeRideContainer').style.display = 'none';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderActiveRide() {
+      document.getElementById('noActiveRide').style.display = 'none';
+      document.getElementById('activeRideContainer').style.display = 'block';
+
+      const r = activeRide;
+      document.getElementById('rideFare').textContent = `PHP ${r.finalFare || r.estimatedFare}`;
+      document.getElementById('routePickup').textContent = r.pickup.label || r.pickup.address;
+      document.getElementById('routeDrop').textContent = r.destination.label || r.destination.address;
+      document.getElementById('textPickup').textContent = r.pickup.address;
+      document.getElementById('textDrop').textContent = r.destination.address;
+      document.getElementById('textPayment').textContent = r.paymentMethod.replace(/_/g, ' ');
+      document.getElementById('textService').textContent = r.serviceType;
+
+      const badge = document.getElementById('statusBadge');
+      const title = document.getElementById('statusTitle');
+      const sub = document.getElementById('statusSubtext');
+      const driverWidget = document.getElementById('driverWidget');
+      const cancelBtn = document.getElementById('cancelRideBtn');
+      const rateBtn = document.getElementById('rateRideBtn');
+
+      // Clear steps
+      document.querySelectorAll('.timeline-step').forEach(s => s.classList.remove('active', 'completed'));
+
+      if (['requested', 'searching'].includes(r.status)) {
+        badge.className = 'badge badge-warning';
+        badge.textContent = 'SEARCHING FOR DRIVERS';
+        title.textContent = 'Finding a nearby driver in Tuguegarao...';
+        sub.textContent = 'Matching with verified available drivers.';
+        document.getElementById('step-requested').classList.add('active');
+        driverWidget.style.display = 'none';
+        cancelBtn.style.display = 'inline-block';
+        rateBtn.style.display = 'none';
+      } else if (r.status === 'accepted') {
+        badge.className = 'badge badge-info';
+        badge.textContent = 'DRIVER ASSIGNED';
+        title.textContent = 'Driver is preparing to pick you up';
+        sub.textContent = 'Vehicle details and contact shown below.';
+        document.getElementById('step-requested').classList.add('completed');
+        document.getElementById('step-accepted').classList.add('active');
+        populateDriverWidget(r);
+        cancelBtn.style.display = 'inline-block';
+      } else if (r.status === 'driver_arriving') {
+        badge.className = 'badge badge-info';
+        badge.textContent = 'DRIVER EN ROUTE';
+        title.textContent = 'Driver is heading to your pickup location';
+        sub.textContent = 'Please be ready at your designated pickup spot.';
+        document.getElementById('step-requested').classList.add('completed');
+        document.getElementById('step-accepted').classList.add('completed');
+        document.getElementById('step-arriving').classList.add('active');
+        populateDriverWidget(r);
+        cancelBtn.style.display = 'inline-block';
+      } else if (r.status === 'driver_arrived') {
+        badge.className = 'badge badge-success';
+        badge.textContent = 'DRIVER HAS ARRIVED';
+        title.textContent = 'Your driver is waiting outside!';
+        sub.textContent = 'Look for the vehicle plate number below.';
+        document.getElementById('step-requested').classList.add('completed');
+        document.getElementById('step-accepted').classList.add('completed');
+        document.getElementById('step-arriving').classList.add('completed');
+        document.getElementById('step-arrived').classList.add('active');
+        populateDriverWidget(r);
+        cancelBtn.style.display = 'inline-block';
+      } else if (r.status === 'trip_started') {
+        badge.className = 'badge badge-success';
+        badge.textContent = 'TRIP IN PROGRESS';
+        title.textContent = 'Heading to destination...';
+        sub.textContent = 'Safe travels across Tuguegarao!';
+        document.getElementById('step-requested').classList.add('completed');
+        document.getElementById('step-accepted').classList.add('completed');
+        document.getElementById('step-arriving').classList.add('completed');
+        document.getElementById('step-arrived').classList.add('completed');
+        document.getElementById('step-trip').classList.add('active');
+        populateDriverWidget(r);
+        cancelBtn.style.display = 'none'; // Cannot cancel once trip starts
+      } else if (r.status === 'completed') {
+        badge.className = 'badge badge-success';
+        badge.textContent = 'TRIP COMPLETED';
+        title.textContent = 'You have arrived safely!';
+        sub.textContent = `Total fare: PHP ${r.finalFare || r.estimatedFare}. Thank you for riding with P_Dot!`;
+        document.querySelectorAll('.timeline-step').forEach(s => s.classList.add('completed'));
+        populateDriverWidget(r);
+        cancelBtn.style.display = 'none';
+        rateBtn.style.display = 'inline-block';
+        if (pollTimer) clearInterval(pollTimer); // Stop polling when done
+      } else if (r.status.startsWith('cancelled') || r.status === 'no_driver_available') {
+        badge.className = 'badge badge-danger';
+        badge.textContent = r.status.replace(/_/g, ' ').toUpperCase();
+        title.textContent = 'Ride Request Ended';
+        sub.textContent = `Reason: ${r.cancellationReason || 'No drivers available at this time'}`;
+        cancelBtn.style.display = 'none';
+        rateBtn.style.display = 'none';
+        if (pollTimer) clearInterval(pollTimer);
+      }
+    }
+
+    function populateDriverWidget(r) {
+      const widget = document.getElementById('driverWidget');
+      if (r.driver && r.driver.user) {
+        widget.style.display = 'flex';
+        document.getElementById('driverName').textContent = `${r.driver.user.firstName} ${r.driver.user.lastName}`;
+        document.getElementById('driverPhone').textContent = r.driver.user.phone;
+        document.getElementById('driverRating').textContent = r.driver.averageRating || '5.0';
+        document.getElementById('driverTrips').textContent = r.driver.totalTripsCompleted || '0';
+        if (r.driver.user.profileImage) {
+          document.getElementById('driverPhoto').src = r.driver.user.profileImage;
+        }
+        if (r.vehicle) {
+          document.getElementById('driverPlate').textContent = r.vehicle.plateNumber;
+          document.getElementById('vehicleDesc').textContent = `${r.vehicle.make} ${r.vehicle.model} (${r.vehicle.color})`;
+        }
+      }
+    }
+
+    async function promptCancelRide() {
+      if (!activeRide) return;
+      const reason = prompt('Please state the reason for cancellation (e.g. Plan changed, found other ride):');
+      if (!reason) return;
+
+      try {
+        const res = await API.put(`/rides/${activeRide._id}/cancel`, { cancellationReason: reason });
+        if (res.success) {
+          alert('Ride request has been cancelled.');
+          fetchActiveRide();
+        }
+      } catch (err) {
+        alert(err.message || 'Failed to cancel ride');
+      }
+    }
+
+    function openRatingModal() {
+      document.getElementById('ratingModal').classList.add('active');
+    }
+
+    function closeRatingModal() {
+      document.getElementById('ratingModal').classList.remove('active');
+    }
+
+    document.getElementById('ratingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeRide) return;
+
+      const score = document.getElementById('ratingScore').value;
+      const comment = document.getElementById('ratingComment').value;
+
+      try {
+        const res = await API.post('/ratings', {
+          rideId: activeRide._id,
+          rating: score,
+          comment
+        });
+
+        if (res.success) {
+          alert('Thank you! Your rating has been submitted.');
+          closeRatingModal();
+          window.location.href = '/passenger/dashboard.html';
+        }
+      } catch (err) {
+        alert(err.message || 'Error submitting rating');
+      }
+    });
+
+    // Start polling every 4 seconds for live status updates
+    fetchActiveRide();
+    pollTimer = setInterval(() => {
+      fetchActiveRide();
+    }, 4000);
+  </script>
+</body>
+</html>

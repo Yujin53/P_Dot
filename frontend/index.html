@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P_Dot — Tuguegarao-Native Ride-Hailing Platform</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/landing.css">
+  <link rel="stylesheet" href="/css/forms.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="navbar">
+    <a href="/" class="logo-container">
+      <div class="logo-mark">P.</div>
+      <div class="logo-text">P_Dot</div>
+      <span class="logo-tag">Tuguegarao</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#service-areas">Service Areas</a></li>
+      <li><a href="#fares">Fare Guide</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/help.html">Support</a></li>
+    </ul>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <a href="/login.html" class="btn btn-outline btn-sm">Log In</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">Passenger Sign Up</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="landing-hero">
+    <div class="hero-wrapper">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span>📍</span> Exclusively built for Tuguegarao City & Cagayan Valley
+        </div>
+        <h1>Your Safe, Local Ride Around <span>Tuguegarao</span></h1>
+        <p>
+          Tired of waiting at street corners? P_Dot connects you directly with verified local tricycle, motorcycle, and car drivers across Centro, Carig, Ugac, Balzain, and nearby barangays.
+        </p>
+        <div class="hero-cta">
+          <a href="/register.html" class="btn btn-accent btn-lg">Book Your First Ride</a>
+          <a href="/driver-register.html" class="btn btn-outline btn-lg" style="color: white; border-color: rgba(255,255,255,0.4);">Drive With P_Dot</a>
+        </div>
+      </div>
+
+      <!-- Quick Fare Estimate Preview Card -->
+      <div class="hero-card">
+        <h3>Fare Estimator</h3>
+        <p>Check transparent official fares across Tuguegarao</p>
+
+        <form id="quickEstimateForm">
+          <div class="form-group">
+            <label>Pickup Location</label>
+            <select class="form-control" id="pickupSelect" required>
+              <option value="">Select pickup landmark / barangay...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Destination</label>
+            <select class="form-control" id="dropSelect" required>
+              <option value="">Select drop-off point...</option>
+            </select>
+          </div>
+
+          <label style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; display: block;">Select Transport Type</label>
+          <div class="service-type-selector">
+            <div class="service-option active" data-type="tricycle">
+              <span class="icon">🛺</span>
+              <span class="name">Tricycle</span>
+            </div>
+            <div class="service-option" data-type="motorcycle">
+              <span class="icon">🛵</span>
+              <span class="name">Moto</span>
+            </div>
+            <div class="service-option" data-type="sedan">
+              <span class="icon">🚗</span>
+              <span class="name">Sedan</span>
+            </div>
+            <div class="service-option" data-type="van_mpv">
+              <span class="icon">🚐</span>
+              <span class="name">Van</span>
+            </div>
+          </div>
+
+          <div id="estimateResult" style="display: none; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Estimated Fare</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);" id="estFareValue">PHP 0</div>
+              </div>
+              <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">
+                <div id="estDistValue">~0 km</div>
+                <div id="estTimeValue">~0 mins</div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Calculate Fare</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Problem & Solution Feature Grid -->
+  <section class="section" id="how-it-works">
+    <div class="section-title">
+      <h2>Why P_Dot in Tuguegarao?</h2>
+      <p>Built specifically to address the unique transport challenges in Cagayan’s capital</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="feature-icon">🛺</div>
+        <h3>Tricycle First Dispatch</h3>
+        <p>Unlike national apps that focus solely on expensive private cars, P_Dot embraces Tuguegarao’s tricycle culture with fair local distance pricing.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>100% Verified Drivers</h3>
+        <p>Every driver must present a valid driver’s license, government clearance, and vehicle OR/CR verified by our administration before picking up passengers.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🇵🇭</div>
+        <h3>Transparent Peso Pricing</h3>
+        <p>No sudden unreasonable surge prices. Fare calculation adheres to configured local standards from Centro all the way to CSU Carig and Buntun.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service Areas Showcase -->
+  <section class="section" id="service-areas" style="background-color: white; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="section-title">
+      <h2>Serving Key Tuguegarao Destinations</h2>
+      <p>Pre-configured landmarks for convenient pickup and drop-off</p>
+    </div>
+
+    <div id="landmarksContainer" class="landmarks-list" style="justify-content: center;">
+      <!-- Populated via API -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-col">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+          <div class="logo-mark" style="width: 32px; height: 32px; font-size: 1rem;">P.</div>
+          <div class="logo-text" style="color: white; font-size: 1.2rem;">P_Dot</div>
+        </div>
+        <p style="font-size: 0.85rem; line-height: 1.6;">
+          Tuguegarao-Native Ride-Hailing Platform. Connecting passengers and verified drivers across Tuguegarao City and Cagayan Valley.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Passengers</h4>
+        <ul>
+          <li><a href="/login.html">Passenger Login</a></li>
+          <li><a href="/register.html">Sign Up as Passenger</a></li>
+          <li><a href="/passenger/saved-places.html">Saved Places</a></li>
+          <li><a href="/help.html">Safety Guidelines</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Drivers</h4>
+        <ul>
+          <li><a href="/driver-register.html">Apply as Driver</a></li>
+          <li><a href="/login.html">Driver Portal</a></li>
+          <li><a href="/driver/verification.html">Verification Requirements</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul>
+          <li><a href="/admin/dashboard.html">Admin Portal</a></li>
+          <li><a href="/about.html">About P_Dot</a></li>
+          <li><a href="/help.html">Support & Help</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>&copy; 2026 P_Dot Tuguegarao. Local MVP Prototype.</div>
+      <div>Default Currency: PHP (₱) | Tuguegarao City, Cagayan</div>
+    </div>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script>
+    let locations = [];
+    let selectedServiceType = 'tricycle';
+
+    // Service type selector
+    document.querySelectorAll('.service-option').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.service-option').forEach(o => o.classList.remove('active'));
+        el.classList.add('active');
+        selectedServiceType = el.dataset.type;
+      });
+    });
+
+    // Load locations for estimate form
+    async function loadLandingData() {
+      try {
+        const res = await API.get('/locations');
+        if (res.success && res.data) {
+          locations = res.data;
+          const pickupSel = document.getElementById('pickupSelect');
+          const dropSel = document.getElementById('dropSelect');
+          const landmarksList = document.getElementById('landmarksContainer');
+
+          landmarksList.innerHTML = '';
+          locations.forEach(loc => {
+            const opt1 = document.createElement('option');
+            opt1.value = loc._id;
+            opt1.textContent = `${loc.name} (${loc.barangay})`;
+            pickupSel.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = loc._id;
+            opt2.textContent = `${loc.name} (${loc.barangay})`;
+            dropSel.appendChild(opt2);
+
+            // Landmark pills
+            const pill = document.createElement('span');
+            pill.className = 'landmark-pill';
+            pill.innerHTML = `<span>📍</span> <strong>${loc.name}</strong> <small style="color:var(--text-muted); font-size:0.75rem;">${loc.barangay}</small>`;
+            landmarksList.appendChild(pill);
+          });
+        }
+      } catch (e) {
+        console.error('Failed to load landing locations:', e);
+      }
+    }
+
+    document.getElementById('quickEstimateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pId = document.getElementById('pickupSelect').value;
+      const dId = document.getElementById('dropSelect').value;
+
+      if (!pId || !dId) return alert('Please choose both pickup and drop-off locations.');
+      if (pId === dId) return alert('Pickup and drop-off cannot be identical.');
+
+      const pLoc = locations.find(l => l._id === pId);
+      const dLoc = locations.find(l => l._id === dId);
+
+      try {
+        const res = await API.post('/rides/estimate', {
+          pickup: pLoc,
+          destination: dLoc,
+          serviceType: selectedServiceType
+        });
+
+        if (res.success) {
+          document.getElementById('estimateResult').style.display = 'block';
+          document.getElementById('estFareValue').textContent = `PHP ${res.data.estimatedFare}`;
+          document.getElementById('estDistValue').textContent = `~${res.data.estimatedDistanceKm} km`;
+          document.getElementById('estTimeValue').textContent = `~${res.data.estimatedDurationMin} mins`;
+        }
+      } catch (err) {
+        alert(err.message || 'Error estimating fare');
+      }
+    });
+
+    loadLandingData();
+  </script>
+</body>
+</html>

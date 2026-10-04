@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ride History — P_Dot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo-container">
+          <div class="logo-mark">P.</div>
+          <div class="logo-text">P_Dot</div>
+        </a>
+      </div>
+      <div class="user-snippet">
+        <img src="/uploads/profiles/default-avatar.png" alt="Avatar" class="user-avatar user-avatar-display">
+        <div class="user-info">
+          <div class="user-name user-name-display">User</div>
+          <div class="user-role user-role-display">Passenger</div>
+        </div>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="/passenger/dashboard.html"><span>🏠</span> Dashboard</a></li>
+        <li><a href="/passenger/request-ride.html"><span>📍</span> Request a Ride</a></li>
+        <li><a href="/passenger/active-ride.html"><span>⚡</span> Active Ride</a></li>
+        <li><a href="/passenger/ride-history.html" class="active"><span>📜</span> Ride History</a></li>
+        <li><a href="/passenger/saved-places.html"><span>⭐</span> Saved Places</a></li>
+        <li><a href="/passenger/ratings.html"><span>★</span> Reviews & Ratings</a></li>
+        <li><a href="/passenger/profile.html"><span>👤</span> Profile Settings</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" class="btn btn-outline btn-sm logout-btn" style="width: 100%; color: #94A3B8; border-color: #334155;">Log Out</a>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="dashboard-topbar">
+        <h1 class="topbar-title">Ride History & Receipts</h1>
+      </header>
+
+      <div class="dashboard-content">
+        <div class="card">
+          <!-- Filters -->
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <select id="filterStatus" class="form-control" style="width: 180px;" onchange="loadHistory(1)">
+              <option value="">All Statuses</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled_by_passenger">Cancelled by Passenger</option>
+              <option value="cancelled_by_driver">Cancelled by Driver</option>
+            </select>
+            <select id="filterService" class="form-control" style="width: 180px;" onchange="loadHistory(1)">
+              <option value="">All Services</option>
+              <option value="tricycle">Tricycle</option>
+              <option value="motorcycle">Motorcycle</option>
+              <option value="sedan">Sedan</option>
+              <option value="van_mpv">Van / MPV</option>
+            </select>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Date & Time</th>
+                  <th>Service</th>
+                  <th>Route</th>
+                  <th>Driver</th>
+                  <th>Fare</th>
+                  <th>Status</th>
+                  <th>Receipt</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <tr><td colspan="8" style="text-align: center;">Loading history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-wrapper">
+            <div id="pageInfo">Showing page 1</div>
+            <div class="pagination-controls">
+              <button class="btn btn-outline btn-sm" id="prevPageBtn" onclick="changePage(-1)">Previous</button>
+              <button class="btn btn-outline btn-sm" id="nextPageBtn" onclick="changePage(1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav-bar">
+    <a href="/passenger/dashboard.html" class="mobile-nav-item"><span class="icon">🏠</span>Home</a>
+    <a href="/passenger/request-ride.html" class="mobile-nav-item"><span class="icon">📍</span>Book</a>
+    <a href="/passenger/active-ride.html" class="mobile-nav-item"><span class="icon">⚡</span>Active</a>
+    <a href="/passenger/ride-history.html" class="mobile-nav-item active"><span class="icon">📜</span>History</a>
+    <a href="/passenger/profile.html" class="mobile-nav-item"><span class="icon">👤</span>Profile</a>
+  </nav>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/navigation.js"></script>
+  <script>
+    Auth.checkAuth(['passenger']);
+    Nav.renderHeader('Ride History');
+
+    let currentPage = 1;
+    let totalPages = 1;
+
+    async function loadHistory(page = 1) {
+      currentPage = page;
+      const status = document.getElementById('filterStatus').value;
+      const service = document.getElementById('filterService').value;
+
+      let url = `/rides?page=${page}&limit=10`;
+      if (status) url += `&status=${status}`;
+      if (service) url += `&serviceType=${service}`;
+
+      try {
+        const res = await API.get(url);
+        const tbody = document.getElementById('historyTableBody');
+
+        if (res.success) {
+          const rides = res.data;
+          totalPages = res.pagination ? res.pagination.totalPages : 1;
+          document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages || 1} (${res.pagination ? res.pagination.total : rides.length} total trips)`;
+
+          document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+          document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+
+          if (rides.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">No trips found.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = '';
+          rides.forEach(r => {
+            const dateStr = new Date(r.requestedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            let badge = 'badge-neutral';
+            if (r.status === 'completed') badge = 'badge-success';
+            else if (r.status.startsWith('cancelled')) badge = 'badge-danger';
+
+            const driverText = r.driver && r.driver.user ? `${r.driver.user.firstName} (${r.vehicle ? r.vehicle.plateNumber : ''})` : 'Unassigned';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><code>#${r._id.toString().slice(-6).toUpperCase()}</code></td>
+              <td>${dateStr}</td>
+              <td style="text-transform: capitalize;">${r.serviceType}</td>
+              <td>
+                <div style="font-size: 0.85rem;"><strong>From:</strong> ${r.pickup.label || r.pickup.address}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);"><strong>To:</strong> ${r.destination.label || r.destination.address}</div>
+              </td>
+              <td>${driverText}</td>
+              <td><strong>PHP ${r.finalFare || r.estimatedFare}</strong></td>
+              <td><span class="badge ${badge}">${r.status.replace(/_/g, ' ')}</span></td>
+              <td>
+                <a href="/passenger/ride-details.html?id=${r._id}" class="btn btn-outline btn-sm">Receipt</a>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function changePage(delta) {
+      const next = currentPage + delta;
+      if (next >= 1 && next <= totalPages) {
+        loadHistory(next);
+      }
+    }
+
+    loadHistory(1);
+  </script>
+</body>
+</html>
